@@ -4,7 +4,7 @@ Because with our team structure and skill set, it costs very high to use 3rd par
 
 3rd party lib is out of our control, over years, many of them died, or changed significantly, it's not trivial to keep up.
 
-Usually popular 3rd party lib needs to cover many different requirements and become bloat, what we need is small portion,
+Usually popular 3rd party lib needs to cover many different requirements and become bloat[使肿胀], what we need is small portion[部分],
 but we have to take all complexity, sometimes the integration cost is higher than the actual implementation.
 It becomes a problem when you have to dig into their implementation deeply to troubleshoot.
 

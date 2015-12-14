@@ -17,7 +17,7 @@ public class HTMLTemplateTest {
         TestModel model = new TestModel();
         model.stringField = "string<";
         model.numberField = 100;
-        model.items.addAll(Lists.newArrayList("a", "b", "c"));
+        model.items.addAll(Lists.newArrayList());
         model.children.add(child("child1", 1.0, true));
         model.children.add(child("child2", 2.0, false));
         model.htmlField = "<pre>html</pre>";

@@ -2,6 +2,8 @@ package core.framework.api.module;
 
 import core.framework.api.Module;
 import core.framework.api.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 
@@ -10,8 +12,9 @@ import java.nio.file.Paths;
  */
 public final class SystemModule extends Module {
     private final String propertyFileName;
-
+    private final Logger logger = LoggerFactory.getLogger(SystemModule.class);
     public SystemModule(String propertyFileName) {
+        logger.info("[Debug] SystemModule constructor init...");
         this.propertyFileName = propertyFileName;
     }
 

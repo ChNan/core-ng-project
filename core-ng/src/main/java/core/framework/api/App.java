@@ -13,6 +13,7 @@ public abstract class App extends Module {
 
     public final void start() {
         try {
+            logger.info("[Debug] App start...");
             configure();
 
             logger.info("execute startup methods");
@@ -28,6 +29,7 @@ public abstract class App extends Module {
         context = new ModuleContext(new BeanFactory(), null);
 
         logger.info("initialize application");
+        logger.info("[Debug] configure start concrete initialize method...");
         initialize();
     }
 }

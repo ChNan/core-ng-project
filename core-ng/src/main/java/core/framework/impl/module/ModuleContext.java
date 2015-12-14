@@ -20,6 +20,7 @@ import core.framework.impl.web.management.HealthCheckController;
 import core.framework.impl.web.management.MemoryUsageController;
 import core.framework.impl.web.management.SchedulerController;
 import core.framework.impl.web.management.ThreadInfoController;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
@@ -40,8 +41,9 @@ public final class ModuleContext {
     public final MockFactory mockFactory;
     public CacheManager cacheManager;
     private Scheduler scheduler;
-
+    private final Logger logger = LoggerFactory.getLogger(ModuleContext.class);
     public ModuleContext(BeanFactory beanFactory, MockFactory mockFactory) {
+        logger.info("[Debug] Start module context init...");
         this.beanFactory = beanFactory;
         this.mockFactory = mockFactory;
 
@@ -71,6 +73,7 @@ public final class ModuleContext {
             httpServer.handler.route.add(HTTPMethod.GET, "/monitor/thread", new ControllerHolder(threadInfoController::threadUsage, true));
             httpServer.handler.route.add(HTTPMethod.GET, "/monitor/thread-dump", new ControllerHolder(threadInfoController::threadDump, true));
         }
+        logger.info("[Debug] Start module context end...");
     }
 
     public Scheduler scheduler() {
