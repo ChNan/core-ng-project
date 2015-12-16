@@ -13,10 +13,12 @@ public abstract class App extends Module {
 
     public final void start() {
         try {
+            logger.info("[Debug-Start] App");
             configure();
 
             logger.info("execute startup methods");
             context.startupHook.forEach(java.lang.Runnable::run);
+            logger.info("[Debug-End] App");
         } catch (Throwable e) {
             logger.error("application failed to start, error={}", e.getMessage(), e);
             System.exit(1);
@@ -24,10 +26,16 @@ public abstract class App extends Module {
     }
 
     public final void configure() {
-        logger.info("initialize framework");
+        logger.info("[Debug-Start] configure");
+        logger.info("configure - initialize framework");
         context = new ModuleContext(new BeanFactory(), null);
 
-        logger.info("initialize application");
+        logger.info("configure - initialize application");
+
+        logger.info("[Debug-Start] initialize");
         initialize();
+        logger.info("[Debug-End] initialize");
+
+        logger.info("[Debug-End] configure");
     }
 }

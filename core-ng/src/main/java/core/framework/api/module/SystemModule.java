@@ -2,6 +2,8 @@ package core.framework.api.module;
 
 import core.framework.api.Module;
 import core.framework.api.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 
@@ -10,13 +12,14 @@ import java.nio.file.Paths;
  */
 public final class SystemModule extends Module {
     private final String propertyFileName;
-
+    private final Logger logger = LoggerFactory.getLogger(SystemModule.class);
     public SystemModule(String propertyFileName) {
         this.propertyFileName = propertyFileName;
     }
 
     @Override
     protected void initialize() {
+        logger.info("[Debug-Start] SystemModule initialize");
         loadProperties(propertyFileName);
 
         property("sys.http.port").ifPresent(port -> http().port(Integer.parseInt(port)));
@@ -69,5 +72,6 @@ public final class SystemModule extends Module {
         property("sys.elasticsearch.host").ifPresent(host -> search().host(host));
 
         property("sys.mongo.uri").ifPresent(uri -> mongo().uri(uri));
+        logger.info("[Debug-End] SystemModule initialize");
     }
 }
