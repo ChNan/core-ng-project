@@ -43,7 +43,7 @@ public final class ModuleContext {
     private Scheduler scheduler;
     private final Logger logger = LoggerFactory.getLogger(ModuleContext.class);
     public ModuleContext(BeanFactory beanFactory, MockFactory mockFactory) {
-        logger.info("[Debug] Start module context init...");
+        logger.info("[Debug-Start] module context");
         this.beanFactory = beanFactory;
         this.mockFactory = mockFactory;
 
@@ -73,7 +73,7 @@ public final class ModuleContext {
             httpServer.handler.route.add(HTTPMethod.GET, "/monitor/thread", new ControllerHolder(threadInfoController::threadUsage, true));
             httpServer.handler.route.add(HTTPMethod.GET, "/monitor/thread-dump", new ControllerHolder(threadInfoController::threadDump, true));
         }
-        logger.info("[Debug] Start module context end...");
+        logger.info("[Debug-End] module context");
     }
 
     public Scheduler scheduler() {

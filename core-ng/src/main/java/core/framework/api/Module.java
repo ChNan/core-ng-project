@@ -30,10 +30,10 @@ public abstract class Module {
     ModuleContext context;
 
     protected void load(Module module) {
-        logger.info("[Debug] load module start, module={}", module.getClass().getName());
+        logger.info("[Debug-Start] load module start, module={}", module.getClass().getName());
         module.context = context;
         module.initialize();
-        logger.info("[Debug] load module end, module={}", module.getClass().getName());
+        logger.info("[Debug-End] load module end, module={}", module.getClass().getName());
     }
 
     public void onShutdown(Runnable runnable) {

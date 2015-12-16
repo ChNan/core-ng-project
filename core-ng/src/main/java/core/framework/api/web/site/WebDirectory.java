@@ -24,6 +24,7 @@ public final class WebDirectory {
     }
 
     private Path locateRootDirectory() {
+        logger.info("[Debug-Start] locateRootDirectory");
         String value = System.getProperty("core.webPath");
         if (value != null) {
             Path path = Paths.get(value).toAbsolutePath();
@@ -44,6 +45,7 @@ public final class WebDirectory {
             }
         }
         logger.info("can not locate web directory");
+        logger.info("[Debug-End] locateRootDirectory");
         return null;
     }
 

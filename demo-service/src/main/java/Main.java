@@ -7,9 +7,10 @@ import org.slf4j.LoggerFactory;
  */
 public class Main {
     static Logger logger = LoggerFactory.getLogger(Main.class);
-
+    ThreadLocal<Integer> threadCount = new ThreadLocal<>();
     public static void main(String[] args) {
-        logger.info("[Debug] Main start...");
+        logger.info("[Debug-Start] Main");
         new DemoServiceApp().start();
+        logger.info("[Debug-End] Main");
     }
 }

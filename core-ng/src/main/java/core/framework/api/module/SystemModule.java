@@ -14,12 +14,12 @@ public final class SystemModule extends Module {
     private final String propertyFileName;
     private final Logger logger = LoggerFactory.getLogger(SystemModule.class);
     public SystemModule(String propertyFileName) {
-        logger.info("[Debug] SystemModule constructor init...");
         this.propertyFileName = propertyFileName;
     }
 
     @Override
     protected void initialize() {
+        logger.info("[Debug-Start] SystemModule initialize");
         loadProperties(propertyFileName);
 
         property("sys.http.port").ifPresent(port -> http().port(Integer.parseInt(port)));
@@ -72,5 +72,6 @@ public final class SystemModule extends Module {
         property("sys.elasticsearch.host").ifPresent(host -> search().host(host));
 
         property("sys.mongo.uri").ifPresent(uri -> mongo().uri(uri));
+        logger.info("[Debug-End] SystemModule initialize");
     }
 }
