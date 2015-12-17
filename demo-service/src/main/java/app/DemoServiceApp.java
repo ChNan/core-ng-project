@@ -16,7 +16,6 @@ public class DemoServiceApp extends App {
         load(new SystemModule("sys.properties"));
 
         load(new ProductModule());
-        load(new JobModule());
         logger.info("[Debug-End] DemoServiceApp initialize...");
     }
 }

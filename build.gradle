@@ -42,6 +42,32 @@ project(':core-ng') {
     }
 }
 
+project(':core') {
+    apply from: file("${rootDir}/gradle/lib.gradle")
+    dependencies {
+        provided(
+                'redis.clients:jedis:2.8.0@jar',
+                "org.elasticsearch:elasticsearch:${elasticVersion}@jar",
+                "org.mongodb:mongo-java-driver:${mongoVersion}",
+                "com.rabbitmq:amqp-client:${rabbitVersion}"
+        )
+        compile(
+                project(":core-ng-api"),
+                'javax.inject:javax.inject:1',
+                'org.javassist:javassist:3.20.0-GA',
+                'org.slf4j:slf4j-api:1.7.12',
+                'com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.6.3',
+                'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.6.3',
+                'org.apache.httpcomponents:httpclient:4.5.1',
+                'io.undertow:undertow-core:1.3.6.Final'
+        )
+        testCompile(
+                'junit:junit:4.12',
+                'org.mockito:mockito-core:1.10.19',
+                'org.hsqldb:hsqldb:2.3.3'
+        )
+    }
+}
 project(':core-ng-test') {
     apply from: file("${rootDir}/gradle/lib.gradle")
     dependencies {
@@ -129,7 +155,19 @@ project(':demo-service') {
         )
     }
 }
+project(':demo-api-service') {
+    apply from: file("${rootDir}/gradle/app.gradle")
 
+    dependencies {
+        compile(
+                project(':core'),
+                'redis.clients:jedis:2.8.0@jar'
+        )
+        testCompile(
+                project(':core-ng-test')
+        )
+    }
+}
 project(':demo-site') {
     apply from: file("${rootDir}/gradle/app.gradle")
 
