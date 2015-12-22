@@ -80,13 +80,14 @@ public class DynamicInstanceBuilder<T> {
             throw new CodeCompileException(e);
         }
     }
+
     @SuppressWarnings("unchecked")
     public T build(Object... constructorParams) {
         try {
             @SuppressWarnings("unchecked")
             Class<T> targetClass = classBuilder.toClass();
             classBuilder.detach();
-            return (T)targetClass.getDeclaredConstructor(constructorParamClasses).newInstance(constructorParams);
+            return (T) targetClass.getDeclaredConstructor(constructorParamClasses).newInstance(constructorParams);
         } catch (CannotCompileException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new CodeCompileException(e);
         }

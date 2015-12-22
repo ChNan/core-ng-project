@@ -10,6 +10,8 @@ import core.framework.api.web.service.ResponseStatus;
 import core.framework.impl.code.CodeBuilder;
 import core.framework.impl.code.DynamicInstanceBuilder;
 import core.framework.impl.reflect.GenericTypes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -27,6 +29,7 @@ public class ServiceControllerBuilder<T> {
     private final T service;
     private final Method method;
     private final HTTPStatus responseStatus;
+    Logger logger = LoggerFactory.getLogger(ServiceControllerBuilder.class);
 
     public ServiceControllerBuilder(Class<T> serviceInterface, T service, Method method) {
         this.serviceInterface = serviceInterface;
@@ -101,6 +104,7 @@ public class ServiceControllerBuilder<T> {
         }
 
         builder.append("}");
+        logger.info("Controller is {}", builder.build());
         return builder.build();
     }
 
