@@ -26,7 +26,7 @@ public class DynamicInstanceBuilder<T> {
 
     public DynamicInstanceBuilder(Class<?> interfaceClass, String className) {
         if (!interfaceClass.isInterface())
-            throw Exceptions.error("interface class must be interface, interfaceClass={}", interfaceClass);
+        throw Exceptions.error("interface class must be interface, interfaceClass={}", interfaceClass);
 
         classPool = ClassPool.getDefault();
         classBuilder = classPool.makeClass(className + "$" + (INDEX.getAndIncrement()));
@@ -81,12 +81,13 @@ public class DynamicInstanceBuilder<T> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public T build(Object... constructorParams) {
         try {
             @SuppressWarnings("unchecked")
             Class<T> targetClass = classBuilder.toClass();
             classBuilder.detach();
-            return targetClass.getDeclaredConstructor(constructorParamClasses).newInstance(constructorParams);
+            return (T) targetClass.getDeclaredConstructor(constructorParamClasses).newInstance(constructorParams);
         } catch (CannotCompileException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new CodeCompileException(e);
         }
