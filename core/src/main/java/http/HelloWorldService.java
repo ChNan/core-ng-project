@@ -1,5 +1,7 @@
-import http.GET;
-import http.RequestPath;
+package http;
+
+import http.annotation.GET;
+import http.annotation.RequestPath;
 
 /**
  * @author Dylan

@@ -1,3 +1,5 @@
+package core.framework.api.test;
+
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -10,10 +12,13 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class JavassistGenerator {
+/**
+ * @author Dylan
+ */
+public class JavaAssistTest {
 
-    public static void main(String[] args) throws NotFoundException, CannotCompileException, IOException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
-        // 创建类  
+    public static void main(String[] args) throws IOException, CannotCompileException, NotFoundException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+        // 创建类
         ClassPool pool = ClassPool.getDefault();
         CtClass cls = pool.makeClass("cn.ibm.com.TestClass");
 
@@ -25,17 +30,17 @@ public class JavassistGenerator {
         cls.addField(param, CtField.Initializer.constant(""));
 
         // 添加无参的构造体
-        CtConstructor cons = new CtConstructor(new CtClass[]{}, cls);
+        CtConstructor cons = new CtConstructor(new CtClass[] {}, cls);
         cons.setBody("{name = \"Brant\";}");
         cls.addConstructor(cons);
 
         // 添加有参的构造体
-        cons = new CtConstructor(new CtClass[]{pool.get("java.lang.String")}, cls);
+        cons = new CtConstructor(new CtClass[] {pool.get("java.lang.String")}, cls);
         cons.setBody("{$0.name = $1;}");
         cls.addConstructor(cons);
 
-        cls.writeFile();
 
+        cls.writeFile();
         // 打印创建类的类名
         System.out.println(cls.toClass());
 
@@ -45,7 +50,7 @@ public class JavassistGenerator {
         System.out.println(getter.invoke(o));
 
         // 调用其setName方法
-        Method setter = o.getClass().getMethod("setName", new Class[]{String.class});
+        Method setter = o.getClass().getMethod("setName", new Class[] {String.class});
         setter.invoke(o, "Adam");
         System.out.println(getter.invoke(o));
 

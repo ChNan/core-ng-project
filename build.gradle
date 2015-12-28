@@ -128,19 +128,19 @@ project(':log-processor') {
     }
 }
 
-project(':benchmark') {
-    apply from: file("${rootDir}/gradle/app.gradle")
-
-    dependencies {
-        compile(
-                project(':core-ng'),
-                'org.openjdk.jmh:jmh-generator-annprocess:1.11.2'
-        )
-        runtime(
-                'redis.clients:jedis:2.8.0@jar'
-        )
-    }
-}
+//project(':benchmark') {
+//    apply from: file("${rootDir}/gradle/app.gradle")
+//
+//    dependencies {
+//        compile(
+//                project(':core-ng'),
+//                'org.openjdk.jmh:jmh-generator-annprocess:1.11.2'
+//        )
+//        runtime(
+//                'redis.clients:jedis:2.8.0@jar'
+//        )
+//    }
+//}
 
 project(':demo-service') {
     apply from: file("${rootDir}/gradle/app.gradle")
@@ -168,15 +168,15 @@ project(':demo-api-service') {
         )
     }
 }
-project(':demo-site') {
-    apply from: file("${rootDir}/gradle/app.gradle")
-
-    dependencies {
-        compile(
-                project(':core-ng')
-        )
-        testCompile(
-                project(':core-ng-test')
-        )
-    }
-}
+//project(':demo-site') {
+//    apply from: file("${rootDir}/gradle/app.gradle")
+//
+//    dependencies {
+//        compile(
+//                project(':core-ng')
+//        )
+//        testCompile(
+//                project(':core-ng-test')
+//        )
+//    }
+//}

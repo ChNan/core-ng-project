@@ -1,28 +1,29 @@
+import web.HttpServerIOHandler;
+import web.demo.OrderWebServiceImpl;
+import java.util.HashMap;
+import java.util.Map;
+
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.Headers;
 
 /**
  * @author Dylan
  */
-public class HelloWorldWebServiceImpl {
-
-    //todo how to implement a web service
-    // 1: Get client call
-    // 2: Parse call, and do action
-    // 3: Return response
-    public String helloWorld() {
+public class Run {
+    public static void main(String[] args) {
         Undertow server = Undertow.builder()
             .addHttpListener(8085, "localhost")
             .setHandler(new HttpHandler() {
                 @Override
                 public void handleRequest(HttpServerExchange exchange) throws Exception {
-                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send("Hello World");
+                    exchange.dispatch(new HttpServerIOHandler());
                 }
             }).build();
         server.start();
-        return "helloworld";
+        Map<String, Object> context = new HashMap<>();
+
+        Map<String, Object> beans = new HashMap<>();
+        beans.put(OrderWebServiceImpl.class.getCanonicalName(), OrderWebServiceImpl.class);
     }
 }

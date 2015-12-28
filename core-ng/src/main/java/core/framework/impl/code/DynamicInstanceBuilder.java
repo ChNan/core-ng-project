@@ -8,11 +8,11 @@ import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.NotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author neo
@@ -80,7 +80,6 @@ public class DynamicInstanceBuilder<T> {
             throw new CodeCompileException(e);
         }
     }
-
     @SuppressWarnings("unchecked")
     public T build(Object... constructorParams) {
         try {

@@ -1,4 +1,5 @@
-import http.RequestPath;
+import http.HelloWorldService;
+import http.annotation.RequestPath;
 
 import java.lang.reflect.Method;
 
@@ -10,6 +11,6 @@ public class AppRun {
             String requestPath = callMethod.getDeclaredAnnotation(RequestPath.class).value();
 
         }
-//        new HelloWorldWebServiceImpl().helloWorld();
+//        new http.HelloWorldWebServiceImpl().helloWorld();
     }
 }
