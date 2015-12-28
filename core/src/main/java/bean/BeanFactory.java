@@ -12,8 +12,8 @@ import java.util.Map;
 public class BeanFactory {
     Map<Key, Object> beans = new HashMap<>();
 
-    public <T> T create(Class<T> targetClass) throws IllegalAccessException, InvocationTargetException, InstantiationException {
-        Constructor<T> targetConstructor = null;
+    public <T> T create(Class<T> targetClass) throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException {
+        Constructor<T> targetConstructor = targetClass.getDeclaredConstructor();
         Object[] targetParams = new Object[]{};
         return targetClass.cast(targetConstructor.newInstance(targetParams));
     }

@@ -39,9 +39,9 @@
 //            Class<?> paramClass = constructorParamClasses[i];
 //            params[i] = classPool.getCtClass(paramClass.getCanonicalName());
 //        }
-//        CtConstructor constructor = new CtConstructor(params, classBuilder);
-//        constructor.setBody("this.delegate = $1;");
-//        classBuilder.addConstructor(constructor);
+//        CtConstructor addConstructor = new CtConstructor(params, classBuilder);
+//        addConstructor.setBody("this.delegate = $1;");
+//        classBuilder.addConstructor(addConstructor);
 //        classBuilder.addMethod(CtMethod.make("public core.framework.api.web.Response execute(core.framework.api.web.Request request) throws Exception {\n" +
 //            "    java.lang.String id = (java.lang.String) request.pathParam(\"id\", java.lang.String.class);\n" +
 //            "    app.product.api.ProductView response = delegate.get(id);" +

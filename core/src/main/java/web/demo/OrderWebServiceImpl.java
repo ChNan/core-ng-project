@@ -6,6 +6,6 @@ package web.demo;
 public class OrderWebServiceImpl implements OrderWebService {
     @Override
     public String getOrder() {
-        return null;
+        return "Dylan order";
     }
 }

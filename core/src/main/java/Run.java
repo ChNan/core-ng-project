@@ -1,23 +1,24 @@
 import bean.BeanFactory;
 import http.annotation.RequestPath;
-import io.undertow.Undertow;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
+import web.Controller;
 import web.HttpServerIOHandler;
+import web.Request;
 import web.ServiceControllerBuilder;
 import web.demo.OrderWebService;
 import web.demo.OrderWebServiceImpl;
-
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 
 /**
  * @author Dylan
  */
 public class Run {
-    public static <T> void main(String[] args) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    public static <T> void main(String[] args) throws Exception {
         BeanFactory beanFactory = new BeanFactory();
         Undertow server = Undertow.builder()
             .addHttpListener(8085, "localhost")
@@ -39,7 +40,11 @@ public class Run {
         for (Method interfaceMethod : interfaceMethods) {
             RequestPath requestPath = interfaceMethod.getAnnotation(RequestPath.class);
             String path = requestPath.value();
-            new ServiceControllerBuilder<>(interfaceClass, beans.get(serviceImplName), interfaceMethod);
+            Controller controller = (Controller) new ServiceControllerBuilder<>(interfaceClass, beans.get(serviceImplName), interfaceMethod)
+                .build(serviceImplName);
+            controller.execute(new Request() {
+
+            });
         }
 
 

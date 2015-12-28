@@ -3,6 +3,7 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtField;
+import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
@@ -13,8 +14,25 @@ import java.lang.reflect.Method;
 public class JavassistGenerator {
 
     public static void main(String[] args) throws NotFoundException, CannotCompileException, IOException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, InstantiationException {
-        // 创建类  
+
+
+        // 创建类
         ClassPool pool = ClassPool.getDefault();
+
+        CtClass ccClass = pool.makeClass("Point" );
+        String bodyString = "{System.out.println(\"Call to method \");}" ;
+        //为新创建的类新加一个方法execute，无任何参数
+        CtMethod n1 = CtNewMethod.make(CtClass.voidType, "execute" ,  null ,  null ,
+            bodyString, ccClass);
+        ccClass.addMethod(n1);
+        //新加第二个方法
+        bodyString = "public Integer getNumber(Integer num,String name);" ;
+        CtMethod n2 = CtNewMethod.make(bodyString, ccClass);//直接创建一个方法，带有一个int的参数和返回值
+        n2.setBody("{System.out.println(\"Point Call to method \");$2=\"22\";return $1;}" );
+        ccClass.addMethod(n2);
+        ccClass.writeFile();
+
+
         CtClass cls = pool.makeClass("cn.ibm.com.TestClass");
 
         // 添加私有成员name及其getter、setter方法

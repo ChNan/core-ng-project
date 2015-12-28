@@ -8,5 +8,5 @@ package web;
  * 3: Response
  */
 public interface Controller {
-    public Response execute(Request request) throws Exception;
+    public String execute(Request request) throws Exception;
 }
