@@ -11,7 +11,7 @@ import javax.inject.Inject;
 /**
  * @author neo
  */
-public class ProductWebServiceImpl implements ProductWebService {
+public class ProductWebServiceImpl implements ProductWebService{
     @Inject
     ProductService productService;
 
