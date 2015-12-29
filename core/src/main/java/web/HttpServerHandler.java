@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class HttpServerHandler implements HttpHandler {
 
-    public List<Controller> controllerList = new ArrayList<>();
+    public List<Controller> controllerContainers = new ArrayList<>();
 
 
     @Override
@@ -21,7 +21,7 @@ public class HttpServerHandler implements HttpHandler {
         } else {
             System.out.println("Request url is " + exchange.getRequestPath());
         }
-        controllerList.forEach(c -> {
+        controllerContainers.forEach(c -> {
             try {
                 c.execute(new Request() {
                 });

@@ -8,7 +8,7 @@ import java.util.List;
  * @author ChNan
  */
 public abstract class Application {
-    private final List<Module> moduleList = new ArrayList<>();
+    private final List<Module> moduleContainers = new ArrayList<>();
 
     public ModuleContext context;
 
@@ -24,11 +24,11 @@ public abstract class Application {
         // 1 create module context, initialize context
         context = new ModuleContext();
         context.startupHook.add(context.httpServer::start);
-        moduleList.addAll(loadModules());
+        moduleContainers.addAll(loadModules());
     }
 
     private void moduleInitialized() {
-        moduleList.forEach(Module::initialized);
+        moduleContainers.forEach(Module::initialized);
     }
 
     private void startupHookRun() {

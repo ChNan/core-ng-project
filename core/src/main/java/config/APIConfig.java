@@ -24,7 +24,7 @@ public class APIConfig {
             String path = requestPath.value();
             Controller controller = (Controller) new ServiceControllerBuilder<>(interfaceClass,
                 interfaceImpl, interfaceMethod).build();
-            context.httpServer.handler.controllerList.add(controller);
+            context.httpServer.handler.controllerContainers.add(controller);
         }
     }
 }
