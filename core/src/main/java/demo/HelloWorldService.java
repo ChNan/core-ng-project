@@ -1,4 +1,4 @@
-package http;
+package demo;
 
 import http.annotation.GET;
 import http.annotation.RequestPath;
