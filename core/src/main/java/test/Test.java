@@ -1,9 +1,7 @@
 package test;
 
-import web.Domain;
-
 /**
- * @author Dylan
+ * @author ChNan
  */
 public class Test {
 

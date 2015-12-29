@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public class BeanFactory {
     Map<Key, Object> beans = new HashMap<>();

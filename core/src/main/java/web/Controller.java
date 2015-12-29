@@ -1,7 +1,7 @@
 package web;
 
 /**
- * @author Dylan
+ * @author ChNan
  * This is the core class, implement mvc framework
  * 1: Request
  * 2: Execute

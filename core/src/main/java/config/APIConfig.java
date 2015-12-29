@@ -8,7 +8,7 @@ import web.ServiceControllerBuilder;
 import java.lang.reflect.Method;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public class APIConfig {
     private ModuleContext context;

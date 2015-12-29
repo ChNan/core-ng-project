@@ -8,10 +8,9 @@ import io.undertow.server.handlers.form.FormParserFactory;
 
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public class HttpServerIOHandler implements HttpHandler {
-    private FormParserFactory formParserFactory;
     private HttpServerHandler handler;
 
     public HttpServerIOHandler(HttpServerHandler handler) {

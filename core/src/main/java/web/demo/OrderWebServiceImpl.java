@@ -1,12 +1,12 @@
 package web.demo;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public class OrderWebServiceImpl implements OrderWebService {
     @Override
     public String getOrder() {
         System.out.println("Call success");
-        return "Dylan order";
+        return "ChNan order";
     }
 }

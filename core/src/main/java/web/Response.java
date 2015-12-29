@@ -1,7 +1,7 @@
 package web;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public interface Response {
 }

@@ -1,7 +1,7 @@
 package module;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public class SystemModule implements Module {
 

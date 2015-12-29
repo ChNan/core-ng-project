@@ -5,7 +5,7 @@ import web.HttpServerHandler;
 import web.HttpServerIOHandler;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public class HttpServer {
     public final HttpServerHandler handler;

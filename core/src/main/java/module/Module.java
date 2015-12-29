@@ -1,7 +1,7 @@
 package module;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public interface Module {
     public void initialized();

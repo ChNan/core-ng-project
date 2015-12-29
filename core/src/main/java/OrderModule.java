@@ -5,7 +5,7 @@ import web.demo.OrderWebService;
 import web.demo.OrderWebServiceImpl;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public class OrderModule extends Config implements Module {
     private ModuleContext context;

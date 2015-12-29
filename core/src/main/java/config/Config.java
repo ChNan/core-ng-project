@@ -3,7 +3,7 @@ package config;
 import web.ModuleContext;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public class Config {
 

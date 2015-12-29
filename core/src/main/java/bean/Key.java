@@ -4,7 +4,7 @@ import java.lang.reflect.Type;
 import java.util.Objects;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public class Key {
 

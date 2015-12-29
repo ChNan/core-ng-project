@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Dylan
+ * @author ChNan
  */
 public abstract class Application {
     private final List<Module> moduleList = new ArrayList<>();
