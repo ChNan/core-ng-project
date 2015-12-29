@@ -7,11 +7,11 @@ import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import org.slf4j.helpers.MessageFormatter;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.helpers.MessageFormatter;
 
 /**
  * @author Dylan
@@ -23,8 +23,9 @@ public class ServiceControllerBuilder<T> {
     private final T serviceImpl;
 
     private final Method targetMethod;
-    ClassPool classPool;
-    CtClass conCreateControllerClass;
+    private ClassPool classPool;
+    private CtClass conCreateControllerClass;
+    private AtomicInteger INDEX = new AtomicInteger();
 
     public ServiceControllerBuilder(Class<T> serviceInterface, T serviceImpl, Method targetMethod) {
         this.serviceInterface = serviceInterface;
@@ -33,35 +34,36 @@ public class ServiceControllerBuilder<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public T build(String conCreateControllerName) throws NotFoundException, CannotCompileException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        AtomicInteger INDEX = new AtomicInteger();
+    public T build() {
+
         classPool = ClassPool.getDefault();
-        conCreateControllerClass = classPool.makeClass(conCreateControllerName + "$" + targetMethod.getName() + "$" + INDEX.getAndDecrement());
-        conCreateControllerClass.addField(CtField.make(MessageFormatter.format("final {} delegate;",
-                serviceInterface.getCanonicalName()).getMessage(),
-            conCreateControllerClass));
-        conCreateControllerClass.addInterface(classPool.getCtClass(Controller.class.getCanonicalName()));
-        CtConstructor constructor = new CtConstructor(null, conCreateControllerClass);
-        constructor.setBody(";");
-        conCreateControllerClass.addConstructor(constructor);
-        addConstructor(new Class[]{serviceInterface}, "this.delegate = $1;");
-
-        conCreateControllerClass.addMethod(CtMethod.make(
-            MessageFormatter.format("public {} execute({} request) throws Exception {",
-                String.class.getCanonicalName(), Request.class.getCanonicalName()
-            ).getMessage()
-                + "delegate." + targetMethod.getName() + "();"
-                +
-                " return \"222\";}",
-            conCreateControllerClass));
-
-        @SuppressWarnings("unchecked")
-        Class<T> cs = conCreateControllerClass.toClass();
-        conCreateControllerClass.detach();
-        //找到特定的构造函数cs.getDeclaredConstructor(new Class[]{serviceInterface})
-        //把 具体的实现类当做参数传进来，最终实例化出一个Controller实例
-        return (T) cs.getDeclaredConstructor(new Class[]{serviceInterface}).newInstance(serviceImpl);
-
+        conCreateControllerClass = classPool.makeClass(serviceImpl.getClass().getCanonicalName() + "$" + targetMethod.getName() + "$" + INDEX.getAndDecrement());
+        try {
+            conCreateControllerClass.addField(CtField.make(MessageFormatter.format("final {} delegate;",
+                    serviceInterface.getCanonicalName()).getMessage(),
+                conCreateControllerClass));
+            conCreateControllerClass.addInterface(classPool.getCtClass(Controller.class.getCanonicalName()));
+            CtConstructor constructor = new CtConstructor(null, conCreateControllerClass);
+            constructor.setBody(";");
+            conCreateControllerClass.addConstructor(constructor);
+            addConstructor(new Class[]{serviceInterface}, "this.delegate = $1;");
+            conCreateControllerClass.addMethod(CtMethod.make(
+                MessageFormatter.format("public {} execute({} request) throws Exception {",
+                    String.class.getCanonicalName(), Request.class.getCanonicalName()
+                ).getMessage()
+                    + "delegate." + targetMethod.getName() + "();"
+                    +
+                    " return \"222\";}",
+                conCreateControllerClass));
+            Class<T> cs = conCreateControllerClass.toClass();
+            conCreateControllerClass.detach();
+            //找到特定的构造函数cs.getDeclaredConstructor(new Class[]{serviceInterface})
+            //把 具体的实现类当做参数传进来，最终实例化出一个Controller实例
+            return (T) cs.getDeclaredConstructor(new Class[]{serviceInterface}).newInstance(serviceImpl);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | NotFoundException | CannotCompileException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void addConstructor(Class[] constructorParamClasses, String body) throws NotFoundException, CannotCompileException {

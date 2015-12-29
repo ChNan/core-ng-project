@@ -12,14 +12,16 @@ import io.undertow.server.handlers.form.FormParserFactory;
  */
 public class HttpServerIOHandler implements HttpHandler {
     private FormParserFactory formParserFactory;
+    private HttpServerHandler handler;
 
-    public HttpServerIOHandler() {
+    public HttpServerIOHandler(HttpServerHandler handler) {
+        this.handler = handler;
         FormParserFactory.Builder formParserFactoryBuilder = FormParserFactory.builder();
         formParserFactoryBuilder.setDefaultCharset(Charsets.UTF_8.name());
     }
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
-        exchange.dispatch(new HttpServerHandler());
+        exchange.dispatch(handler);
     }
 }

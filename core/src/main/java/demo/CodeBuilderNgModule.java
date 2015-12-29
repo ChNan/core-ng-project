@@ -1,7 +1,7 @@
 //package demo;
 //
 //import app.product.service.ProductService;
-//import core.framework.api.Module;
+//import core.framework.api.module.Module;
 //import core.framework.impl.code.CodeBuilder;
 //import javassist.CannotCompileException;
 //import javassist.ClassPool;
@@ -19,7 +19,7 @@
 ///**
 // * @author Dylan
 // */
-//public class CodeBuilderNgModule<T> extends Module {
+//public class CodeBuilderNgModule<T> extends module.Module {
 //    Class service;
 //
 //    public T run() throws CannotCompileException, NotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, IOException {
