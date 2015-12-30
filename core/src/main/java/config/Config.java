@@ -1,6 +1,6 @@
 package config;
 
-import web.ModuleContext;
+import context.ModuleContext;
 
 /**
  * @author ChNan

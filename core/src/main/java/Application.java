@@ -1,18 +1,19 @@
+import context.Context;
 import module.Module;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import web.ModuleContext;
+import context.ModuleContext;
 
 /**
  * @author ChNan
  */
-public abstract class Application {
-    public ModuleContext context;
+public abstract class Application extends Context {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Startup.class);
 
     public void start() {
         LOGGER.info("Application...start begin");
-        configure();
+        initialized();
 
         loadModule();
 
@@ -21,8 +22,8 @@ public abstract class Application {
         LOGGER.info("Application...start end");
     }
 
-    public void configure() {
-        // 1 create module context, initialize context
+    public void initialized() {
+        // 1: create module context, initialize context
         context = new ModuleContext();
         context.startupHook.add(context.httpServer::start);
     }

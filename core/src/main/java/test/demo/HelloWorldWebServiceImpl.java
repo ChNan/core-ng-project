@@ -1,4 +1,4 @@
-package demo;
+package test.demo;
 
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;

@@ -1,8 +1,9 @@
 package config;
 
+import context.Context;
 import http.annotation.RequestPath;
 import web.Controller;
-import web.ModuleContext;
+import context.ModuleContext;
 import web.ServiceControllerBuilder;
 
 import java.lang.reflect.Method;
@@ -10,8 +11,7 @@ import java.lang.reflect.Method;
 /**
  * @author ChNan
  */
-public class APIConfig {
-    private ModuleContext context;
+public class APIConfig extends Context {
 
     public APIConfig(ModuleContext context) {
         this.context = context;
