@@ -1,8 +1,4 @@
-import module.Module;
 import module.SystemModule;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author ChNan
@@ -10,7 +6,9 @@ import java.util.List;
 public class OrderApplication extends Application {
 
     @Override
-    public List<Module> loadModules() {
-        return Arrays.asList(new OrderModule(context), new SystemModule("sys.properties"));
+    public void loadModule() {
+        load(new SystemModule("sys.properties"));
+        load(new OrderModule(context));
+
     }
 }

@@ -8,6 +8,11 @@ import web.HttpServerIOHandler;
  * @author ChNan
  */
 public class HttpServer {
+    static {
+        // make undertow to use slf4j
+        System.setProperty("org.jboss.logging.provider", "slf4j");
+    }
+
     public final HttpServerHandler handler;
 
     public HttpServer() {
