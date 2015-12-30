@@ -10,6 +10,5 @@ public class OrderApplication extends Application {
     public void loadModule() {
         load(new SystemModule("sys.properties"));
         load(new OrderModule(context));
-
     }
 }

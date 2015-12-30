@@ -11,4 +11,7 @@ public class Config {
         return new APIConfig(context);
     }
 
+    public DBConfig db() {
+        return new DBConfig();
+    }
 }
