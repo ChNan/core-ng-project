@@ -1,5 +1,6 @@
 package web;
 
+import web.route.Route;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
@@ -12,6 +13,8 @@ import java.util.List;
 public class HttpServerHandler implements HttpHandler {
 
     public List<Controller> controllerContainers = new ArrayList<>();
+
+    public Route route = new Route();
 
 
     @Override

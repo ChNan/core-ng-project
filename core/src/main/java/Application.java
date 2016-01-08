@@ -1,14 +1,13 @@
-import context.Context;
+import context.ModuleContext;
 import module.Module;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import context.ModuleContext;
 
 /**
  * @author ChNan
  */
-public abstract class Application extends Context {
-
+public abstract class Application {
+    public ModuleContext context;
     private static final Logger LOGGER = LoggerFactory.getLogger(Startup.class);
 
     public void start() {

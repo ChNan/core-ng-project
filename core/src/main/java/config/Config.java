@@ -6,8 +6,9 @@ import context.ModuleContext;
  * @author ChNan
  */
 public class Config {
+    public ModuleContext context;
 
-    public APIConfig api(ModuleContext context) {
+    public APIConfig api() {
         return new APIConfig(context);
     }
 
