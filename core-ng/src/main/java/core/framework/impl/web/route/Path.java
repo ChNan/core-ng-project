@@ -11,6 +11,7 @@ public final class Path {
 
         Path current = root;
         StringBuilder builder = new StringBuilder();
+        //  /order/:orderId/:user
         for (int i = 1; i < path.length(); i++) {
             char ch = path.charAt(i);
             if (ch != '/') {

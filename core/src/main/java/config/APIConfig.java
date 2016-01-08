@@ -6,6 +6,7 @@ import http.HttpMethodHelper;
 import http.annotation.RequestPath;
 import web.Controller;
 import context.ModuleContext;
+import web.ControllerHolder;
 import web.ServiceControllerBuilder;
 
 import java.lang.reflect.Method;
@@ -27,6 +28,7 @@ public class APIConfig extends Context {
             String path = requestPath.value();
             Controller controller = (Controller) new ServiceControllerBuilder<>(interfaceClass,
                 interfaceImpl, interfaceMethod).build();
+            context.httpServer.handler.route.add(httpMethod, path, new ControllerHolder(controller));
             context.httpServer.handler.controllerContainers.add(controller);
         }
     }

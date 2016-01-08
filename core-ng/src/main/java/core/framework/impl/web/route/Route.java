@@ -25,7 +25,7 @@ public final class Route {
         logger.info("route, {} {}", method, path);
         validator.validate(path);
         controller.action = new ActionInfo(method, path).action();
-
+        //uri: order/:orderId
         URLHandler handler;
         if (path.contains("/:")) {
             handler = dynamicRoot.register(path);

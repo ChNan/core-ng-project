@@ -9,9 +9,6 @@ public class ControllerHolder {
 
     public Controller controller;
     public Method targetMethod;
-
-    public String controllerInfo;
-
     public boolean skiInterceptor;
 
     public ControllerHolder(Controller controller) {
