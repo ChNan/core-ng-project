@@ -12,6 +12,12 @@ import java.util.Map;
  */
 public class URLHandler {
 
+    final String path;
+
+    public URLHandler(String path) {
+        this.path = path;
+    }
+
     Map<HttpMethod, ControllerHolder> controllerMethodMap = Maps.newHashMap();
 
 
