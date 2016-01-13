@@ -20,11 +20,15 @@ import core.framework.api.util.Exceptions;
 import core.framework.api.util.Lists;
 import core.framework.api.util.StopWatch;
 import org.bson.BsonDocument;
+import org.bson.codecs.Codec;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,12 +51,18 @@ public final class MongoImpl implements Mongo, MongoOption {
     public void initialize() {
         try {
             if (uri == null) throw new Error("uri() must be called before initialize");
-            builder.codecRegistry(codecs.codecRegistry());
+            builder.codecRegistry(codecRegistry());
             mongoClient = new MongoClient(uri);
             database = mongoClient.getDatabase(uri.getDatabase());
         } finally {
             logger.info("initialize mongo client, uri={}", uri);
         }
+    }
+
+    private CodecRegistry codecRegistry() {
+        List<Codec<?>> codecs = new ArrayList<>(this.codecs.codecs.values());
+        codecs.add(new LocalDateTimeCodec());
+        return CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(), CodecRegistries.fromCodecs(codecs));
     }
 
     public void close() {
@@ -268,18 +278,19 @@ public final class MongoImpl implements Mongo, MongoOption {
 
     private void checkSlowQuery(long elapsedTime) {
         if (elapsedTime > slowQueryThresholdInMs) {
-            logger.warn(Markers.errorType("SLOW_QUERY"), "slow mongo query, elapsedTime={}", elapsedTime);
+            logger.warn(Markers.errorCode("SLOW_QUERY"), "slow mongo query, elapsedTime={}", elapsedTime);
         }
     }
 
     private void checkTooManyRowsReturned(int size) {
         if (size > tooManyRowsReturnedThreshold) {
-            logger.warn(Markers.errorType("TOO_MANY_ROWS_RETURNED"), "too many rows returned, returnedRows={}", size);
+            logger.warn(Markers.errorCode("TOO_MANY_ROWS_RETURNED"), "too many rows returned, returnedRows={}", size);
         }
     }
 
     private <T> MongoCollection<T> collection(Class<T> entityClass) {
         Collection collection = entityClass.getDeclaredAnnotation(Collection.class);
+        if (database == null) initialize(); // lazy init for dev test, initialize will be called in startup hook for complete env
         return database.getCollection(collection.name(), entityClass);
     }
 }

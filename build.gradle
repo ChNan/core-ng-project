@@ -4,12 +4,12 @@ subprojects {
     apply from: file("${rootDir}/gradle/quality.gradle")
 
     group = 'core.framework'
-    version = '3.9.4'
+    version = '4.0.0'
 }
 
-def mongoVersion = '3.1.0'
-def elasticVersion = '2.1.0'
-def rabbitVersion = '3.5.6'
+def mongoVersion = '3.2.0'
+def elasticVersion = '2.1.1'
+def rabbitVersion = '3.6.0'
 
 project(':core-ng-api') {
     apply from: file("${rootDir}/gradle/lib.gradle")
@@ -29,10 +29,10 @@ project(':core-ng') {
                 'javax.inject:javax.inject:1',
                 'org.javassist:javassist:3.20.0-GA',
                 'org.slf4j:slf4j-api:1.7.12',
-                'com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.6.3',
-                'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.6.3',
+                'com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.6.4',
+                'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.6.4',
                 'org.apache.httpcomponents:httpclient:4.5.1',
-                'io.undertow:undertow-core:1.3.6.Final'
+                'io.undertow:undertow-core:1.3.12.Final'
         )
         testCompile(
                 'junit:junit:4.12',
@@ -149,7 +149,11 @@ project(':demo-service') {
     dependencies {
         compile(
                 project(':core-ng'),
-                'redis.clients:jedis:2.8.0@jar'
+                'redis.clients:jedis:2.8.0@jar',
+                "com.amazonaws:aws-java-sdk-s3:1.10.43"
+        )
+        runtime(
+                "com.rabbitmq:amqp-client:${rabbitVersion}"
         )
         testCompile(
                 project(':core-ng-test')

@@ -56,6 +56,7 @@ public class TypeValidator {
 
         Field[] fields = objectClass.getDeclaredFields();
         for (Field field : fields) {
+            if (field.getName().startsWith("$")) continue;  // ignore dynamic/generated field, e.g. jacoco
             validateField(field);
             if (visitor != null) visitor.visitField(field, path);
 
@@ -110,6 +111,9 @@ public class TypeValidator {
     }
 
     private void validateClass(Class<?> objectClass) {
+        if (objectClass.isMemberClass() && !Modifier.isStatic(objectClass.getModifiers()))
+            throw Exceptions.error("class must be static, class={}", objectClass.getCanonicalName());
+
         if (objectClass.isInterface() || Modifier.isAbstract(objectClass.getModifiers()) || !Modifier.isPublic(objectClass.getModifiers()))
             throw Exceptions.error("class must be public concrete, class={}", objectClass.getCanonicalName());
         if (!Object.class.equals(objectClass.getSuperclass())) {

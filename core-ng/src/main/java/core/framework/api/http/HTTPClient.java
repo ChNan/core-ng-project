@@ -73,12 +73,14 @@ public final class HTTPClient {
             ActionLogContext.track("http", elapsedTime);
             logger.debug("execute, elapsedTime={}", elapsedTime);
             if (elapsedTime > slowTransactionThresholdInMs) {
-                logger.warn(Markers.errorType("SLOW_HTTP"), "slow http transaction, elapsedTime={}", elapsedTime);
+                logger.warn(Markers.errorCode("SLOW_HTTP"), "slow http transaction, elapsedTime={}", elapsedTime);
             }
         }
     }
 
-    private ByteBuf responseBody(HttpEntity entity) throws IOException {
+    ByteBuf responseBody(HttpEntity entity) throws IOException {
+        if (entity == null) return ByteBuf.newBufferWithExpectedLength(0);  // for HEAD request, 204/304/205, http client will not create entity
+
         int length = (int) entity.getContentLength();
         ByteBuf buffer = length >= 0 ? ByteBuf.newBufferWithExpectedLength(length) : ByteBuf.newBuffer(4096);
         try (InputStream stream = entity.getContent()) {

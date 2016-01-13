@@ -1,5 +1,37 @@
 ## Change log
 
+### 4.0.0 (1/8/2016 - 1/11/2016)
+* bytebuf: improve for skip/available as it will be wrapped by buffered stream or S3 client
+* web: mark path not found error code to PATH_NOT_FOUND (to ignore 3rd party scan)
+* batch: new async support, use Executor
+
+### 3.10.1 (1/7/2016)
+* mongo: support LocalDateTime in filter
+
+### 3.10.0 (1/7/2016)
+* httpclient: fix NPE with HttpEntity is null on 204
+
+### 3.9.10 (1/5/2016)
+* elasticsearch: ignore cluster name for transport client
+
+### 3.9.9 (12/31/2015)
+* url: encode '+' for path segment to keep compatible with other impl, e.g. undertow, AWS S3
+
+### 3.9.8 (12/22/2015 - 12/24/2015)
+* mongo: update driver to 3.2.0
+* quality: support jacoco report
+
+### 3.9.7 (12/18/2015 - 12/22/2015)
+* lib: updated undertow to 1.3.10, jackson to 2.6.4, update quality check lib
+* db: added repository.select(query) to support complex query + limit
+
+### 3.9.6 (12/17/2015)
+* log: dynamic group action log message to forward, 2000 or 5M which comes first
+
+### 3.9.5 (12/16/2015 - 12/17/2015)
+* log: update log forwarding structure, send in batch
+* log: moved ErrorCode to core.framework.api.log.ErrorCode
+
 ### 3.9.4 (12/10/2015 - 12/14/2015)
 * elasticsearch: update to 2.1.0
 * log: restructure trace/warning log, for prod log aggregation
