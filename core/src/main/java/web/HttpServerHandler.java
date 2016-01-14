@@ -1,8 +1,10 @@
 package web;
 
-import web.route.Route;
+import http.HttpMethod;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import web.request.Request;
+import web.route.Route;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,18 +21,10 @@ public class HttpServerHandler implements HttpHandler {
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
-        if (exchange.getRequestPath().contains("/order")) {
-            System.out.println("Request url is order request ," + exchange.getRequestPath());
-        } else {
-            System.out.println("Request url is " + exchange.getRequestPath());
-        }
-        controllerContainers.forEach(c -> {
-            try {
-                c.execute(new Request() {
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
+        ControllerHolder controllerHolder = route.get(exchange.getRequestPath(), HttpMethod.valueOf(exchange.getRequestMethod().toString()));
+
+        controllerHolder.controller.execute(new Request() {
         });
     }
 }

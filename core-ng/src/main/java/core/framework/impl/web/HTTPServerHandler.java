@@ -56,6 +56,7 @@ public class HTTPServerHandler implements HttpHandler {
         try {
             ActionLog actionLog = logManager.currentActionLog();
             requestParser.parse(request, exchange, actionLog);
+
             request.session = sessionManager.load(request);
 
             HeaderMap headers = exchange.getRequestHeaders();

@@ -8,6 +8,7 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 import org.slf4j.helpers.MessageFormatter;
+import web.request.Request;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

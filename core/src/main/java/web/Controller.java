@@ -1,5 +1,7 @@
 package web;
 
+import web.request.Request;
+
 /**
  * @author ChNan
  * This is the core class, implement mvc framework

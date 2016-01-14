@@ -17,8 +17,9 @@ public class Route {
         urlHandler.put(httpMethod, controllerHolder);
     }
 
-    public URLHandler get(String requestPath) {
-        return path.find(requestPath);
+    public ControllerHolder get(String requestPath, HttpMethod httpMethod) {
+        URLHandler urlHandler = path.find(requestPath);
+        return urlHandler.get(httpMethod);
     }
 
 

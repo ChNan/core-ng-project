@@ -27,4 +27,8 @@ public class URLHandler {
             throw Exceptions.error("Controller conflict ,exist {} already", previous);
         }
     }
+
+    public ControllerHolder get(HttpMethod httpMethod) {
+        return controllerMethodMap.get(httpMethod);
+    }
 }
