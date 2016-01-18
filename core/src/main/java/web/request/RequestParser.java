@@ -8,6 +8,6 @@ import io.undertow.server.HttpServerExchange;
 public class RequestParser {
 
     private RequestImpl parse(HttpServerExchange exchange){
-
+        return null;
     }
 }

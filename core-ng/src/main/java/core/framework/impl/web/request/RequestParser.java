@@ -29,10 +29,10 @@ public final class RequestParser {
 
         HeaderMap headers = exchange.getRequestHeaders();
 
-        String xForwardedFor = headers.getFirst(Headers.X_FORWARDED_FOR);
         String remoteAddress = exchange.getSourceAddress().getAddress().getHostAddress();
         logger.debug("[request] remoteAddress={}", remoteAddress);
 
+        String xForwardedFor = headers.getFirst(Headers.X_FORWARDED_FOR);
         String clientIP = clientIP(remoteAddress, xForwardedFor);
         request.clientIP = clientIP;
         actionLog.context("clientIP", clientIP);
@@ -111,6 +111,7 @@ public final class RequestParser {
         return xForwardedFor;
     }
 
+    //HTTP_X_FORWARDED_FOR can be comma delimited list of IPs
     int port(int hostPort, String xForwardedPort) {
         if (xForwardedPort != null) {
             int index = xForwardedPort.indexOf(',');

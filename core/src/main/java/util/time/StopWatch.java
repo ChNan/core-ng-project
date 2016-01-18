@@ -3,7 +3,7 @@ package util.time;
 import java.text.MessageFormat;
 
 /**
- * @author ILovT
+ * @author Dylan
  */
 public final class StopWatch {
     private long start;

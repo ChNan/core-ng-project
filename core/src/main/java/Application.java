@@ -22,7 +22,7 @@ public abstract class Application {
     }
 
     public void initialized() {
-        // 1: create module context, initialize context
+        // create module context, initialize context
         context = new ModuleContext();
         context.startupHook.add(context.httpServer::start);
     }

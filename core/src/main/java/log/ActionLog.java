@@ -1,8 +1,8 @@
 package log;
 
-import com.iliangfeng.core.utils.time.DateConvert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.time.DateConvert;
 
 import java.util.Date;
 import java.util.Map;

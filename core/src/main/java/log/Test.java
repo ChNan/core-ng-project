@@ -1,6 +1,7 @@
 package log;
 
-import com.iliangfeng.core.utils.clazz.ClassUtils;
+
+import util.clazz.ClassUtils;
 
 import java.util.Date;
 
