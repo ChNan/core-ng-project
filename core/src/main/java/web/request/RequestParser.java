@@ -7,7 +7,7 @@ import io.undertow.server.HttpServerExchange;
  */
 public class RequestParser {
 
-    private RequestImpl parse(HttpServerExchange exchange){
+    private Request parse(HttpServerExchange exchange){
         return null;
     }
 }

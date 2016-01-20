@@ -24,7 +24,6 @@ public class HttpServerHandler implements HttpHandler {
 
         ControllerHolder controllerHolder = route.get(exchange.getRequestPath(), HttpMethod.valueOf(exchange.getRequestMethod().toString()));
 
-        controllerHolder.controller.execute(new Request() {
-        });
+        controllerHolder.controller.execute(new Request());
     }
 }

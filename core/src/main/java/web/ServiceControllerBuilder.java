@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author ChNan
  */
 public class ServiceControllerBuilder<T> {
-
     private final Class<T> serviceInterface;
 
     private final T serviceImpl;
