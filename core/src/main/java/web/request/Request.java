@@ -6,7 +6,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
-import log.ActionLog;
+import log.ActionLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +32,7 @@ public class Request {
 
     }
 
-    public Request(HttpServerExchange exchange, ActionLog actionLog) {
+    public Request(HttpServerExchange exchange, ActionLogger actionLog) {
         this.exchange = exchange;
 
         this.httpMethod = HttpMethod.valueOf(exchange.getRequestMethod().toString());
@@ -64,12 +64,13 @@ public class Request {
         if (this.httpMethod == HttpMethod.POST || this.httpMethod == HttpMethod.PUT) {
             String contentType = headers.getFirst(Headers.CONTENT_TYPE);
             this.contentType = contentType == null ? null : ContentType.parse(contentType);
+            parseBody();
         }
 
     }
 
-    void parseBody(Request request) {
-
+    //todo
+    private void parseBody() {
     }
 
     private String createRequestURL(HttpServerExchange exchange) {

@@ -1,6 +1,7 @@
 package http;
 
 import io.undertow.Undertow;
+import log.TraceLogger;
 import web.HttpServerHandler;
 import web.HttpServerIOHandler;
 
@@ -15,8 +16,9 @@ public class HttpServer {
 
     public final HttpServerHandler handler;
 
-    public HttpServer() {
-        handler = new HttpServerHandler();
+    private TraceLogger traceLogger;
+    public HttpServer(TraceLogger traceLogger) {
+        handler = new HttpServerHandler(traceLogger);
     }
 
     public void start() {
