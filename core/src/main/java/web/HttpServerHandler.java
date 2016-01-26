@@ -26,7 +26,6 @@ public class HttpServerHandler implements HttpHandler {
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
         ControllerHolder controllerHolder = route.get(exchange.getRequestPath(), HttpMethod.valueOf(exchange.getRequestMethod().toString()));
-
         controllerHolder.controller.execute(new Request(exchange, traceLogger));
     }
 }

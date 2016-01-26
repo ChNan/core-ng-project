@@ -17,7 +17,7 @@ public class ModuleContext {
     public final TraceLogger traceLogger;
 
     public ModuleContext() {
-        httpServer = new HttpServer();
+        httpServer = new HttpServer(TraceLogger.get());
         beanFactory = new BeanFactory();
         startupHook = new ArrayList<>();
         traceLogger = TraceLogger.get();
