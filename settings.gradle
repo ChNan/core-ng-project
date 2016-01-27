@@ -4,7 +4,4 @@ include 'core-ng-api',
         'benchmark',
         'log-processor',
         'demo-service', 
-        'demo-site',
-        'core',
-        'demo-api-service',
-        'demo-api-service-interface'
+        'demo-site'
