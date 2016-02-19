@@ -1,6 +1,5 @@
 package core.framework.api.util;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author neo
@@ -29,20 +29,20 @@ public class JSONTest {
     }
 
     @Test
-    public void withMapField() {
+    public void mapField() {
         BeanWithMapField bean = new BeanWithMapField();
         bean.attributes.put("key1", "value1");
         bean.attributes.put("key2", "value2");
         String json = JSON.toJSON(bean);
-        Assert.assertEquals("{\"attributes\":{\"key1\":\"value1\",\"key2\":\"value2\"}}", json);
+        assertEquals("{\"attributes\":{\"key1\":\"value1\",\"key2\":\"value2\"}}", json);
 
         BeanWithMapField parsedBean = JSON.fromJSON(BeanWithMapField.class, json);
-        Assert.assertEquals("value1", parsedBean.attributes.get("key1"));
-        Assert.assertEquals("value2", parsedBean.attributes.get("key2"));
+        assertEquals("value1", parsedBean.attributes.get("key1"));
+        assertEquals("value2", parsedBean.attributes.get("key2"));
     }
 
     @Test
-    public void withDateField() {
+    public void dateField() {
         BeanWithDateField bean = new BeanWithDateField();
         bean.instant = Instant.now();
         bean.dateTime = LocalDateTime.ofInstant(bean.instant, ZoneId.systemDefault());
@@ -50,17 +50,17 @@ public class JSONTest {
         String json = JSON.toJSON(bean);
 
         BeanWithDateField parsedBean = JSON.fromJSON(BeanWithDateField.class, json);
-        Assert.assertEquals(bean.instant, parsedBean.instant);
-        Assert.assertEquals(bean.date, parsedBean.date);
-        Assert.assertEquals(bean.dateTime, parsedBean.dateTime);
+        assertEquals(bean.instant, parsedBean.instant);
+        assertEquals(bean.date, parsedBean.date);
+        assertEquals(bean.dateTime, parsedBean.dateTime);
     }
 
     @Test
-    public void withNull() {
+    public void nullObject() {
         String json = JSON.toJSON(null);
         Bean bean = JSON.fromJSON(Bean.class, json);
 
-        Assert.assertNull(bean);
+        assertNull(bean);
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)

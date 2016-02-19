@@ -3,8 +3,6 @@ package core.framework.api.module;
 import core.framework.api.redis.Redis;
 import core.framework.impl.module.ModuleContext;
 import core.framework.impl.redis.RedisImpl;
-import core.framework.impl.resource.RefreshPoolJob;
-import core.framework.impl.scheduler.FixedRateTrigger;
 
 import java.time.Duration;
 
@@ -13,45 +11,47 @@ import java.time.Duration;
  */
 public final class RedisConfig {
     private final ModuleContext context;
-    private final RedisImpl redis;
+    private final Redis redis;
 
     public RedisConfig(ModuleContext context) {
         this.context = context;
 
         if (context.beanFactory.registered(Redis.class, null)) {
             redis = context.beanFactory.bean(Redis.class, null);
-        } else if (context.isTest()) {
-            redis = null;
-            context.beanFactory.bind(Redis.class, null, context.mockFactory.create(Redis.class));
         } else {
-            redis = new RedisImpl();
-            context.shutdownHook.add(redis::close);
-            context.scheduler().addTrigger(new FixedRateTrigger("refresh-redis-pool", new RefreshPoolJob(redis.pool), Duration.ofMinutes(5)));
+            if (context.isTest()) {
+                redis = context.mockFactory.create(Redis.class);
+            } else {
+                RedisImpl redis = new RedisImpl();
+                context.shutdownHook.add(redis::close);
+                context.backgroundTask().scheduleWithFixedDelay(redis.pool::refresh, Duration.ofMinutes(5));
+                this.redis = redis;
+            }
             context.beanFactory.bind(Redis.class, null, redis);
         }
     }
 
     public void host(String host) {
         if (!context.isTest()) {
-            redis.host(host);
+            ((RedisImpl) redis).host(host);
         }
     }
 
     public void poolSize(int minSize, int maxSize) {
         if (!context.isTest()) {
-            redis.pool.size(minSize, maxSize);
+            ((RedisImpl) redis).pool.size(minSize, maxSize);
         }
     }
 
-    public void slowQueryThreshold(Duration slowQueryThreshold) {
+    public void slowOperationThreshold(Duration threshold) {
         if (!context.isTest()) {
-            redis.slowQueryThreshold(slowQueryThreshold);
+            ((RedisImpl) redis).slowOperationThreshold(threshold);
         }
     }
 
     public void timeout(Duration timeout) {
         if (!context.isTest()) {
-            redis.timeout(timeout);
+            ((RedisImpl) redis).timeout(timeout);
         }
     }
 }

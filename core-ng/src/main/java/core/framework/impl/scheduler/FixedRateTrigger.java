@@ -3,36 +3,41 @@ package core.framework.impl.scheduler;
 
 import core.framework.api.scheduler.Job;
 import core.framework.api.util.Randoms;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 
 /**
  * @author neo
  */
-public class FixedRateTrigger extends Trigger {
-    private final Logger logger = LoggerFactory.getLogger(FixedRateTrigger.class);
-
+public final class FixedRateTrigger implements Trigger {
+    private final String name;
+    private final Job job;
     private final Duration rate;
 
     public FixedRateTrigger(String name, Job job, Duration rate) {
-        super(name, job);
+        this.name = name;
+        this.job = job;
         this.rate = rate;
     }
 
     @Override
-    void schedule(Scheduler scheduler) {
-        logger.info("scheduled fixed rate job, name={}, rate={}, job={}", name, rate, job.getClass().getCanonicalName());
-        scheduler.schedule(name, job, initialDelay(), rate);
-    }
-
-    private Duration initialDelay() {
-        return Duration.ofMillis((long) Randoms.number(8000, 15000));   // delay 8s to 15s
+    public String name() {
+        return name;
     }
 
     @Override
-    public String scheduleInfo() {
+    public Job job() {
+        return job;
+    }
+
+    @Override
+    public void schedule(Scheduler scheduler) {
+        Duration delay = Duration.ofMillis((long) Randoms.number(8000, 15000)); // delay 8s to 15s
+        scheduler.schedule(this, delay, rate);
+    }
+
+    @Override
+    public String frequency() {
         return "fixed-rate@" + rate;
     }
 }

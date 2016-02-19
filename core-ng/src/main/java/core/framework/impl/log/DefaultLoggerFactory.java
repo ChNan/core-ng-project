@@ -10,13 +10,8 @@ import java.util.Map;
  * @author neo
  */
 public final class DefaultLoggerFactory implements ILoggerFactory {
-    public final LogManager logManager;
+    public final LogManager logManager = new LogManager();
     private final Map<String, Logger> loggers = Maps.newConcurrentHashMap();
-
-    public DefaultLoggerFactory() {
-        logManager = new LogManager();
-        logManager.logger = getLogger(LogManager.class.getName());  // create logger requires logManager, so this is to create logManager first then assign logger
-    }
 
     @Override
     public Logger getLogger(String name) {
@@ -24,17 +19,16 @@ public final class DefaultLoggerFactory implements ILoggerFactory {
     }
 
     private Logger createLogger(String name) {
-        LogLevel[] levels = logLevel(name);
-        return new LoggerImpl(name, logManager, levels[0], levels[1]);
+        return new LoggerImpl(name, logManager, traceLevel(name));
     }
 
-    private LogLevel[] logLevel(String name) {
+    private LogLevel traceLevel(String name) {
         if (name.startsWith("org.elasticsearch")
             || name.startsWith("org.mongodb")
             || name.startsWith("org.apache")
             || name.startsWith("org.xnio")) {
-            return new LogLevel[]{LogLevel.WARN, LogLevel.INFO};
+            return LogLevel.INFO;
         }
-        return new LogLevel[]{LogLevel.INFO, LogLevel.DEBUG};
+        return LogLevel.DEBUG;
     }
 }

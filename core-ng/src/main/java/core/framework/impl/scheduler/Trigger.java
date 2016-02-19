@@ -5,16 +5,12 @@ import core.framework.api.scheduler.Job;
 /**
  * @author neo
  */
-public abstract class Trigger {
-    public final String name;
-    public final Job job;
+public interface Trigger {
+    String name();
 
-    Trigger(String name, Job job) {
-        this.name = name;
-        this.job = job;
-    }
+    Job job();
 
-    abstract void schedule(Scheduler scheduler);
+    String frequency();
 
-    public abstract String scheduleInfo();
+    void schedule(Scheduler scheduler);
 }

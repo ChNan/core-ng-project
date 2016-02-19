@@ -2,14 +2,15 @@ package core.framework.impl.web.request;
 
 import core.framework.api.http.ContentType;
 import core.framework.api.http.HTTPMethod;
+import core.framework.api.util.Encodings;
 import core.framework.api.util.Exceptions;
-import core.framework.api.util.JSON;
 import core.framework.api.util.Maps;
 import core.framework.api.web.CookieSpec;
 import core.framework.api.web.MultipartFile;
 import core.framework.api.web.Request;
 import core.framework.api.web.Session;
 import core.framework.api.web.exception.BadRequestException;
+import core.framework.impl.json.JSONMapper;
 import core.framework.impl.web.BeanValidator;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
@@ -37,7 +38,7 @@ public final class RequestImpl implements Request {
     String requestURL;
     ContentType contentType;
     FormData formData;
-    String body;
+    byte[] body;
 
     public RequestImpl(HttpServerExchange exchange, BeanValidator validator) {
         this.exchange = exchange;
@@ -78,7 +79,11 @@ public final class RequestImpl implements Request {
     public Optional<String> cookie(String name) {
         Cookie cookie = exchange.getRequestCookies().get(name);
         if (cookie == null) return Optional.empty();
-        return Optional.of(cookie.getValue());
+        try {
+            return Optional.of(Encodings.decodeURIComponent(cookie.getValue()));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(e.getMessage(), BadRequestException.DEFAULT_ERROR_CODE, e);
+        }
     }
 
     @Override
@@ -146,18 +151,16 @@ public final class RequestImpl implements Request {
         if (method == HTTPMethod.GET || method == HTTPMethod.DELETE) {
             Map<String, String> params = Maps.newHashMap();
             exchange.getQueryParameters().forEach((name, values) -> params.put(name, values.element()));
-            String formJSON = JSON.toJSON(params);
-            return JSON.fromJSON(instanceType, formJSON);
+            return JSONMapper.fromMapValue(instanceType, params);
         } else if (method == HTTPMethod.POST || method == HTTPMethod.PUT) {
             if (formData != null) {
                 Map<String, String> form = Maps.newHashMap();
                 for (String name : formData) {
                     form.put(name, formData.getFirst(name).getValue());
                 }
-                String formJSON = JSON.toJSON(form);
-                return JSON.fromJSON(instanceType, formJSON);
+                return JSONMapper.fromMapValue(instanceType, form);
             } else if (body != null && contentType != null && ContentType.APPLICATION_JSON.mediaType().equals(contentType.mediaType())) {
-                return JSON.fromJSON(instanceType, body);
+                return JSONMapper.fromJSON(instanceType, body);
             }
             throw new BadRequestException("body is missing or unsupported content type, method=" + method + ", contentType=" + contentType);
         } else {

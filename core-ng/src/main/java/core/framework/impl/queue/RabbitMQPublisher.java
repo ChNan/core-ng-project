@@ -3,9 +3,9 @@ package core.framework.impl.queue;
 import com.rabbitmq.client.AMQP;
 import core.framework.api.queue.Message;
 import core.framework.api.queue.MessagePublisher;
-import core.framework.api.util.JSON;
 import core.framework.api.util.Maps;
 import core.framework.api.util.Network;
+import core.framework.impl.json.JSONWriter;
 import core.framework.impl.log.ActionLog;
 import core.framework.impl.log.LogManager;
 
@@ -16,30 +16,30 @@ import java.util.Map;
  */
 public class RabbitMQPublisher<T> implements MessagePublisher<T> {
     private final RabbitMQ rabbitMQ;
-    private final RabbitMQEndpoint endpoint;
+    private final String exchange;
+    private final String routingKey;
     private final String messageType;
     private final MessageValidator validator;
     private final LogManager logManager;
+    private final JSONWriter<T> writer;
 
-    public RabbitMQPublisher(RabbitMQ rabbitMQ, RabbitMQEndpoint endpoint, Class<T> messageClass, MessageValidator validator, LogManager logManager) {
+    public RabbitMQPublisher(RabbitMQ rabbitMQ, String exchange, String routingKey, Class<T> messageClass, MessageValidator validator, LogManager logManager) {
         this.rabbitMQ = rabbitMQ;
-        this.endpoint = endpoint;
+        this.exchange = exchange;
+        this.routingKey = routingKey;
         this.messageType = messageClass.getDeclaredAnnotation(Message.class).name();
         this.validator = validator;
         this.logManager = logManager;
+        writer = JSONWriter.of(messageClass);
     }
 
     @Override
     public void publish(T message) {
-        publish(endpoint.exchange, endpoint.routingKey, message);
+        publish(exchange, routingKey, message);
     }
 
     @Override
-    public void publish(String routingKey, T message) {
-        publish(endpoint.exchange, routingKey, message);
-    }
-
-    private void publish(String exchange, String routingKey, T message) {
+    public void publish(String exchange, String routingKey, T message) {
         validator.validate(message);
 
         Map<String, Object> headers = Maps.newHashMap();
@@ -53,7 +53,7 @@ public class RabbitMQPublisher<T> implements MessagePublisher<T> {
 
         linkContext(builder, headers);
 
-        rabbitMQ.publish(exchange, routingKey, JSON.toJSON(message), builder.build());
+        rabbitMQ.publish(exchange, routingKey, writer.toJSON(message), builder.build());
     }
 
     private void linkContext(AMQP.BasicProperties.Builder builder, Map<String, Object> headers) {

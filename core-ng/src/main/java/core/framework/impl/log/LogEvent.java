@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter;
  */
 final class LogEvent {
     final LogLevel level;
+    private final String thread;
     private final String logger;
     private final Marker marker;
     private final long time = System.currentTimeMillis();
@@ -29,14 +30,15 @@ final class LogEvent {
         this.message = message;
         this.arguments = arguments;
         this.exception = exception;
+        thread = Thread.currentThread().getName();
     }
 
     String logMessage() {
         if (logMessage == null) {
-            StringBuilder builder = new StringBuilder(64);
+            StringBuilder builder = new StringBuilder(256);
             builder.append(DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(time)))
                 .append(" [")
-                .append(Thread.currentThread().getName())
+                .append(thread)
                 .append("] ")
                 .append(level.name())
                 .append(' ')

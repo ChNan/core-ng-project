@@ -31,4 +31,26 @@ public class EncodingsTest {
         String encodedMessage = Encodings.base64URLSafe(bytes);
         assertArrayEquals(bytes, Encodings.decodeBase64URLSafe(encodedMessage));
     }
+
+    @Test
+    public void uriComponent() {
+        assertEquals("encode utf-8", "%E2%9C%93", Encodings.uriComponent("✓"));
+        assertEquals("a%20b", Encodings.uriComponent("a b"));
+        assertEquals("a%2Bb", Encodings.uriComponent("a+b"));
+        assertEquals("a%3Db", Encodings.uriComponent("a=b"));
+        assertEquals("a%3Fb", Encodings.uriComponent("a?b"));
+        assertEquals("a%2Fb", Encodings.uriComponent("a/b"));
+        assertEquals("a%26b", Encodings.uriComponent("a&b"));
+    }
+
+    @Test
+    public void decodeURIComponent() {
+        assertEquals("decode utf-8", "✓", Encodings.decodeURIComponent("%E2%9C%93"));
+        assertEquals("a b", Encodings.decodeURIComponent("a%20b"));
+        assertEquals("a+b", Encodings.decodeURIComponent("a+b"));
+        assertEquals("a=b", Encodings.decodeURIComponent("a=b"));
+        assertEquals("a?b", Encodings.decodeURIComponent("a%3Fb"));
+        assertEquals("a/b", Encodings.decodeURIComponent("a%2Fb"));
+        assertEquals("a&b", Encodings.decodeURIComponent("a&b"));
+    }
 }

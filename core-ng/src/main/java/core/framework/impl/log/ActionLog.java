@@ -1,10 +1,6 @@
 package core.framework.impl.log;
 
-import core.framework.api.log.Markers;
 import core.framework.api.util.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -18,53 +14,63 @@ import java.util.UUID;
  * @author neo
  */
 public final class ActionLog {
-    private static final int MAX_TRACE_HOLD_SIZE = 5000;
+    private static final int MAX_TRACE_HOLD_SIZE = 3000;    // normal trace 3000 lines is about 350k
     public final String id = UUID.randomUUID().toString();
     final Instant startTime = Instant.now();
     final Map<String, String> context = Maps.newLinkedHashMap();
     final Map<String, PerformanceStat> performanceStats = Maps.newHashMap();
-    private final Logger logger = LoggerFactory.getLogger(ActionLog.class);
+    final List<LogEvent> events = new LinkedList<>();
+    private final String logger = LoggerImpl.abbreviateLoggerName(ActionLog.class.getCanonicalName());
     public boolean trace;  // whether flush trace log for all subsequent actions
     public String action = "unassigned";
     String refId;
     String errorMessage;
     long elapsed;
-    List<LogEvent> events = new LinkedList<>();
     private LogLevel result = LogLevel.INFO;
     private String errorCode;
+
+    ActionLog(String message) {
+        log(message);
+        log("[context] id={}", id);
+    }
+
+    void end(String message) {
+        elapsed = Duration.between(startTime, Instant.now()).toMillis();
+        log("[context] elapsed={}", elapsed);
+        log(message);
+    }
 
     void process(LogEvent event) {
         if (event.level.value > result.value) {
             result = event.level;
             errorCode = event.errorCode(); // only update error type/message if level raised, so error type will be first WARN or first ERROR
-            errorMessage = event.message();
+            errorMessage = errorMessage(event);
         }
 
-        if (events.size() < MAX_TRACE_HOLD_SIZE) {
+        int size = events.size();
+        if (size < MAX_TRACE_HOLD_SIZE || event.level.value >= LogLevel.WARN.value) {  // after reach max holding lines, only add warning/error events
             events.add(event);
+            if (size == MAX_TRACE_HOLD_SIZE)
+                log("reached max trace log holding size, only collect critical log event from now on");
         }
     }
 
-    void end() {
-        if (events.size() == MAX_TRACE_HOLD_SIZE) {
-            Marker marker = Markers.errorCode("TRACE_LOG_TOO_LONG");
-            String message = "reached max holding size of trace log, please contact arch team";
-            if (result.value < LogLevel.WARN.value) {       // not hide existing warn/error if there is already one
-                result = LogLevel.WARN;
-                errorCode = marker.getName();
-                errorMessage = message;
-            }
-            LogEvent warning = new LogEvent(logger.getName(), marker, LogLevel.WARN, message, null, null);
-            events.add(warning);
-        }
-        elapsed = Duration.between(startTime, Instant.now()).toMillis();
+    private void log(String message, Object... argument) {  // add log event directly, so internal message and won't be suspended
+        LogEvent event = new LogEvent(logger, null, LogLevel.DEBUG, message, argument, null);
+        events.add(event);
+    }
+
+    private String errorMessage(LogEvent event) {
+        String message = event.message();
+        if (message.length() > 200)
+            return message.substring(0, 200);    // limit 200 chars in action log
+        return message;
     }
 
     String result() {
-        if (result == LogLevel.INFO) {
+        if (result == LogLevel.INFO)
             return trace ? "TRACE" : "OK";
-        }
-        return String.valueOf(result);
+        return result.name();
     }
 
     boolean flushTraceLog() {
@@ -82,7 +88,7 @@ public final class ActionLog {
     }
 
     public void context(String key, Object value) {
-        logger.debug("[context] {}={}", key, value);
+        log("[context] {}={}", key, value);
         context.put(key, String.valueOf(value));
     }
 
@@ -99,13 +105,13 @@ public final class ActionLog {
 
     public void refId(String refId) {
         if (refId != null) {
-            logger.debug("[context] refId={}", refId);
+            log("[context] refId={}", refId);
             this.refId = refId;
         }
     }
 
     public void action(String action) {
-        logger.debug("[context] action={}", action);
+        log("[context] action={}", action);
         this.action = action;
     }
 }

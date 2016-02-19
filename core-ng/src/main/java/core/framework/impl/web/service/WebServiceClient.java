@@ -7,15 +7,14 @@ import core.framework.api.http.HTTPMethod;
 import core.framework.api.http.HTTPRequest;
 import core.framework.api.http.HTTPResponse;
 import core.framework.api.http.HTTPStatus;
+import core.framework.api.util.Encodings;
 import core.framework.api.util.Exceptions;
-import core.framework.api.util.JSON;
 import core.framework.api.util.Maps;
 import core.framework.api.util.Strings;
-import core.framework.api.util.Types;
-import core.framework.api.util.URIBuilder;
 import core.framework.api.validate.ValidationException;
 import core.framework.api.web.exception.RemoteServiceException;
 import core.framework.api.web.service.WebServiceRequestSigner;
+import core.framework.impl.json.JSONMapper;
 import core.framework.impl.log.ActionLog;
 import core.framework.impl.log.LogManager;
 import core.framework.impl.web.BeanValidator;
@@ -47,31 +46,41 @@ public class WebServiceClient {
         this.logManager = logManager;
     }
 
-    public String serviceURL(String pathPattern, Map<String, String> pathParams) {
-        URIBuilder builder = new URIBuilder(serviceURL);
+    public String serviceURL(String pathPattern, Map<String, Object> pathParams) {
+        StringBuilder builder = new StringBuilder(serviceURL);
         Path path = Path.parse(pathPattern).next; // skip the first '/'
         while (path != null) {
             String value = path.value;
             if ("/".equals(value)) {
-                builder.addPath("");
+                builder.append(value);
             } else if (value.startsWith(":")) {
                 int paramIndex = value.indexOf('(');
                 int endIndex = paramIndex > 0 ? paramIndex : value.length();
                 String variable = value.substring(1, endIndex);
-                String pathParam = pathParams.get(variable);
-                validatePathParam(pathParam, variable);
-                builder.addPath(pathParam);
+                String pathParam = pathParam(pathParams, variable);
+                builder.append('/').append(Encodings.uriComponent(pathParam));
             } else {
-                builder.addPath(value);
+                builder.append('/').append(value);
             }
             path = path.next;
         }
-        return builder.toURI();
+        return builder.toString();
     }
 
-    private void validatePathParam(String pathParam, String variable) {
-        if (pathParam == null || pathParam.length() == 0)
-            throw new ValidationException(Maps.newHashMap(variable, "path param must not be empty, name=" + variable + ", value=" + pathParam));
+    private String pathParam(Map<String, Object> pathParams, String variable) {
+        Object param = pathParams.get(variable);
+        if (param == null) throw new ValidationException(Maps.newHashMap(variable, Strings.format("path param must not null, name={}", variable)));
+        // convert logic matches PathParams
+        if (param instanceof String) {
+            String paramValue = (String) param;
+            if (Strings.isEmpty(paramValue))
+                throw new ValidationException(Maps.newHashMap(variable, Strings.format("path param must not be empty, name={}", variable)));
+            return paramValue;
+        } else if (param instanceof Integer) {
+            return String.valueOf(param);
+        } else {
+            return JSONMapper.toJSONValue(param);
+        }
     }
 
     public Object execute(HTTPMethod method, String serviceURL, Type requestType, Object requestBean, Type responseType) {
@@ -89,12 +98,12 @@ public class WebServiceClient {
         linkContext(request);
 
         if (requestBean != null) {
-            String json = JSON.toJSON(requestBean);
             if (method == HTTPMethod.GET || method == HTTPMethod.DELETE) {
-                Map<String, String> queryParams = JSON.fromJSON(Types.map(String.class, String.class), json);
+                Map<String, String> queryParams = JSONMapper.toMapValue(requestBean);
                 addQueryParams(request, queryParams);
             } else if (method == HTTPMethod.POST || method == HTTPMethod.PUT) {
-                request.text(json, ContentType.APPLICATION_JSON);
+                byte[] json = JSONMapper.toJSON(requestBean);
+                request.body(json, ContentType.APPLICATION_JSON);
             } else {
                 throw Exceptions.error("not supported method, method={}", method);
             }
@@ -109,7 +118,7 @@ public class WebServiceClient {
         validateResponse(response);
 
         if (void.class != responseType) {
-            return JSON.fromJSON(responseType, response.text());
+            return JSONMapper.fromJSON(responseType, response.body());
         } else {
             return null;
         }
@@ -136,9 +145,9 @@ public class WebServiceClient {
     private void validateResponse(HTTPResponse response) {
         HTTPStatus status = response.status();
         if (status.code >= HTTPStatus.OK.code && status.code <= 300) return;
-        String responseText = response.text();
+        byte[] responseBody = response.body();
         try {
-            ErrorResponse error = JSON.fromJSON(ErrorResponse.class, responseText);
+            ErrorResponse error = JSONMapper.fromJSON(ErrorResponse.class, responseBody);
             logger.debug("failed to call remote service, id={}, errorCode={}, remoteStackTrace={}", error.id, error.errorCode, error.stackTrace);
             RemoteServiceException exception = new RemoteServiceException(error.message, status, error.errorCode);
             exception.id = error.id;
@@ -146,6 +155,7 @@ public class WebServiceClient {
         } catch (RemoteServiceException e) {
             throw e;
         } catch (Exception e) {
+            String responseText = response.text();
             logger.warn("failed to decode response, statusCode={}, responseText={}", status.code, responseText, e);
             throw new RemoteServiceException(Strings.format("internal communication failed, status={}, responseText={}", status.code, responseText), status, "REMOTE_ERROR", e);
         }

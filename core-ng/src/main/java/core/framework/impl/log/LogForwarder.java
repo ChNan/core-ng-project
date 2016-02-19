@@ -3,26 +3,24 @@ package core.framework.impl.log;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ShutdownSignalException;
-import core.framework.api.queue.Message;
-import core.framework.api.util.JSON;
 import core.framework.api.util.Maps;
 import core.framework.api.util.Network;
-import core.framework.api.util.Strings;
 import core.framework.api.util.Threads;
+import core.framework.impl.json.JSONWriter;
 import core.framework.impl.log.queue.ActionLogMessage;
-import core.framework.impl.log.queue.ActionLogMessages;
 import core.framework.impl.log.queue.PerformanceStatMessage;
-import core.framework.impl.queue.RabbitMQ;
+import core.framework.impl.log.queue.StatMessage;
+import core.framework.impl.queue.RabbitMQImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.LinkedList;
-import java.util.List;
+import java.time.Instant;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -33,13 +31,15 @@ public final class LogForwarder {
     private final Logger logger = LoggerFactory.getLogger(LogForwarder.class);
     private final String appName;
 
-    private final AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder().type(ActionLogMessages.class.getAnnotation(Message.class).name()).build();
+    private final AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder().build();
 
-    private final Queue<ActionLogMessage> queue = new ConcurrentLinkedQueue<>();
-    private final RabbitMQ rabbitMQ = new RabbitMQ();
+    private final BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
+    private final RabbitMQImpl rabbitMQ = new RabbitMQImpl();
 
     private final AtomicBoolean stop = new AtomicBoolean(false);
     private final Thread logForwarderThread;
+    private final JSONWriter<ActionLogMessage> actionLogWriter = JSONWriter.of(ActionLogMessage.class);
+    private final JSONWriter<StatMessage> statWriter = JSONWriter.of(StatMessage.class);
     private int retryAttempts;
 
     public LogForwarder(String host, String appName) {
@@ -50,15 +50,13 @@ public final class LogForwarder {
             logger.info("log forwarder thread started");
             while (!stop.get()) {
                 try {
-                    sendActionLogMessages();
+                    forwardLogs();
                 } catch (Throwable e) {
                     if (!stop.get()) {  // if not initiated by shutdown, exception types can be ShutdownSignalException, InterruptedException
-
                         retryAttempts++;
                         if (retryAttempts >= 10) {  // roughly 5 mins to hold messages if log queue is not available
                             queue.clear();    // clear messages to clean up memory
                         }
-
                         logger.warn("failed to send log message, retry in 30 seconds, attempts={}", retryAttempts, e);
                         Threads.sleepRoughly(Duration.ofSeconds(30));
                     }
@@ -80,31 +78,19 @@ public final class LogForwarder {
         rabbitMQ.close();
     }
 
-    private void sendActionLogMessages() throws InterruptedException, IOException {
+    private void forwardLogs() throws InterruptedException, IOException {
         Channel channel = rabbitMQ.createChannel();
         try {
-            List<ActionLogMessage> logs = new LinkedList<>();
-            int messageSize = 0;
             while (!stop.get()) {
-                ActionLogMessage message = queue.poll();
-                if (message != null) {
-                    logs.add(message);
-                    messageSize += 1000;    // action log without trace is roughly 1k
-                    messageSize += message.traceLog == null ? 0 : message.traceLog.length();
+                Object message = queue.take();
+
+                if (message instanceof ActionLogMessage) {
+                    channel.basicPublish("", "action-log-queue", properties, actionLogWriter.toJSON((ActionLogMessage) message));
+                } else if (message instanceof StatMessage) {
+                    channel.basicPublish("", "stat-queue", properties, statWriter.toJSON((StatMessage) message));
                 }
 
-                if ((message == null && !logs.isEmpty()) || logs.size() >= 2000 || messageSize >= 5000000) {    // send if more than 2000 logs or larger than 5M
-                    ActionLogMessages messages = new ActionLogMessages();
-                    messages.logs = logs;
-                    channel.basicPublish("", "action-log-queue", properties, Strings.bytes(JSON.toJSON(messages)));
-                    retryAttempts = 0;  // reset retry attempts if one message sent successfully
-                    logs = new LinkedList<>();
-                    messageSize = 0;
-                }
-
-                if (message == null) {
-                    Thread.sleep(5000);
-                }
+                retryAttempts = 0;  // reset retry attempts if one message sent successfully
             }
         } finally {
             closeChannel(channel);
@@ -121,7 +107,7 @@ public final class LogForwarder {
         }
     }
 
-    void forward(ActionLog log) {
+    void forwardLog(ActionLog log) {
         ActionLogMessage message = new ActionLogMessage();
         message.app = appName;
         message.serverIP = Network.localHostAddress();
@@ -134,7 +120,6 @@ public final class LogForwarder {
         message.errorCode = log.errorCode();
         message.errorMessage = log.errorMessage;
         message.context = log.context;
-
         Map<String, PerformanceStatMessage> performanceStats = Maps.newLinkedHashMap();
         log.performanceStats.forEach((key, stat) -> {
             PerformanceStatMessage statMessage = new PerformanceStatMessage();
@@ -143,15 +128,23 @@ public final class LogForwarder {
             performanceStats.put(key, statMessage);
         });
         message.performanceStats = performanceStats;
-
         if (log.flushTraceLog()) {
-            StringBuilder traceLog = new StringBuilder(log.events.size() * 64);
+            StringBuilder builder = new StringBuilder(log.events.size() << 8);  // length * 256 as rough initial capacity
             for (LogEvent event : log.events) {
-                traceLog.append(event.logMessage());
+                builder.append(event.logMessage());
             }
-            message.traceLog = traceLog.toString();
+            message.traceLog = builder.toString();
         }
+        queue.add(message);
+    }
 
+    public void forwardStats(Map<String, Double> stats) {
+        StatMessage message = new StatMessage();
+        message.id = UUID.randomUUID().toString();
+        message.date = Instant.now();
+        message.app = appName;
+        message.serverIP = Network.localHostAddress();
+        message.stats = stats;
         queue.add(message);
     }
 }

@@ -1,12 +1,14 @@
 package core.framework.impl.cache;
 
 import core.framework.api.cache.Cache;
-import core.framework.api.util.JSON;
+import core.framework.api.util.Charsets;
 import core.framework.api.util.Maps;
+import core.framework.impl.json.JSONReader;
+import core.framework.impl.json.JSONWriter;
 
 import java.lang.reflect.Type;
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,28 +22,32 @@ public class CacheImpl<T> implements Cache<T> {
     public final Type valueType;
     public final Duration duration;
     private final CacheStore cacheStore;
+    private final JSONReader<T> reader;
+    private final JSONWriter<T> writer;
 
     public CacheImpl(String name, Type valueType, Duration duration, CacheStore cacheStore) {
         this.name = name;
         this.valueType = valueType;
         this.duration = duration;
         this.cacheStore = cacheStore;
+        reader = JSONReader.of(valueType);
+        writer = JSONWriter.of(valueType);
     }
 
     @Override
     public T get(String key, Function<String, T> loader) {
         String cacheKey = cacheKey(key);
-        String cacheValue = cacheStore.get(cacheKey);
+        byte[] cacheValue = cacheStore.get(cacheKey);
         if (cacheValue == null) {
             T value = loader.apply(key);
-            cacheStore.put(cacheKey, JSON.toJSON(value), duration);
+            cacheStore.put(cacheKey, writer.toJSON(value), duration);
             return value;
         }
-        return JSON.fromJSON(valueType, cacheValue);
+        return reader.fromJSON(cacheValue);
     }
 
     @Override
-    public List<T> getAll(List<String> keys, Function<String, T> loader) {
+    public Map<String, T> getAll(List<String> keys, Function<String, T> loader) {
         int size = keys.size();
         String[] cacheKeys = new String[size];
         int index = 0;
@@ -49,19 +55,19 @@ public class CacheImpl<T> implements Cache<T> {
             cacheKeys[index] = cacheKey(key);
             index++;
         }
-        List<T> values = new ArrayList<>(size);
-        Map<String, String> newValues = Maps.newHashMapWithExpectedSize(size);
-        Map<String, String> cacheValues = cacheStore.getAll(cacheKeys);
+        Map<String, T> values = new LinkedHashMap<>(size);
+        Map<String, byte[]> newValues = Maps.newHashMapWithExpectedSize(size);
+        Map<String, byte[]> cacheValues = cacheStore.getAll(cacheKeys);
         index = 0;
         for (String key : keys) {
             String cacheKey = cacheKeys[index];
-            String cacheValue = cacheValues.get(cacheKey);
+            byte[] cacheValue = cacheValues.get(cacheKey);
             if (cacheValue == null) {
                 T value = loader.apply(key);
-                newValues.put(cacheKey, JSON.toJSON(value));
-                values.add(value);
+                newValues.put(cacheKey, writer.toJSON(value));
+                values.put(key, value);
             } else {
-                values.add(JSON.fromJSON(valueType, cacheValue));
+                values.put(key, reader.fromJSON(cacheValue));
             }
             index++;
         }
@@ -71,7 +77,7 @@ public class CacheImpl<T> implements Cache<T> {
 
     @Override
     public void put(String key, T value) {
-        cacheStore.put(cacheKey(key), JSON.toJSON(value), duration);
+        cacheStore.put(cacheKey(key), writer.toJSON(value), duration);
     }
 
     @Override
@@ -80,8 +86,9 @@ public class CacheImpl<T> implements Cache<T> {
     }
 
     public Optional<String> get(String key) {
-        String result = cacheStore.get(cacheKey(key));
-        return Optional.ofNullable(result);
+        byte[] result = cacheStore.get(cacheKey(key));
+        if (result == null) return Optional.empty();
+        return Optional.of(new String(result, Charsets.UTF_8));
     }
 
     private String cacheKey(String key) {

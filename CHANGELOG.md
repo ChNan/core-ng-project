@@ -1,4 +1,75 @@
+## TODO
+* think about /test//b, and /:path(*)
+* framework error, queue listener, background task error notification?
+* search require JSONMapper.toJSONValue()
+
 ## Change log
+### 4.1.7 (2/17/2016 - 2/18/2016)
+* rabbitmq: unified single/batch message polling
+
+### 4.1.6 (2/17/2016)
+* util: moved InputStreams to util, open to use
+* log: make max trace log 3000, and only append warn/error after
+* search: added SearchResponse<T> to convert hits to object on framework level
+
+### 4.1.5 (2/16/2016)
+* tuning: internal tuning, move low level optimization class to impl package, leave core.framework.util simple ones
+* httpclient: use byte[] as body, remove ByteBuf
+* log: use 500k as max trace log to forward to log processor, removed max trace event size limit, truncate after 5000 and only add warning events
+
+### 4.1.4 (2/12/2016 - 2/15/2016)
+* cache: make cache process byte[] directly to redis
+* log: limit trace log 200k max per line, rise max log events per action to 10,000
+* json: add afterburner module for object binding performance
+
+### 4.1.3 (2/11/2016)
+* db: lower default db timeout to 15s
+* queue: updated rabbitMQ api and config api
+* json: start convert json to bytes directly, to lower memory footprint with queue/ES/cache
+
+### 4.1.2 (2/10/2016)
+* web: removed web/not-found, web/method-not-allowed action assign, since we use error_code now
+* background: moved pool-cleanup, collect-stat job to background thread, not included in action
+* web: renamed all internal /management/* path to /_sys/*
+
+### 4.1.1 (2/9/2016)
+* monitor: initial monitoring draft, forward monitor metrics via logforwarder
+
+### 4.1.0 (2/4/2016)
+* template: invalid url attr will write src="", container will write empty if content is null
+* elasticsearch: support 2.2.0, load groovy plugin in test context
+
+### 4.0.9 (2/3/2016)
+* redis: loose slow_redis warning threshold and timeout, on busy server due to CPU context switch, it's relative easy to hit it
+
+### 4.0.8 (2/2/2016)
+* web: requestURL now contains QueryString, (requestURL is url without decoding)
+
+### 4.0.7 (1/28/2016)
+* log: renamed all slow query error_code and naming
+* pool: add error code POOL_TIME_OUT
+
+### 4.0.6 (1/27/2016)
+* template: warning if url fragment gets null url
+* log: forward log one by one to simplify, batch happens on log-processor
+
+### 4.0.5 (1/22/2016)
+* log: make 3rd party log level to info, (e.g. ES log sampler error by INFO level in separated thread)
+* elasticsearch: set ping timeout, support dynamic index name (for alias or time serial index name)
+
+### 4.0.4 (1/21/2016)
+* fix: typo in @NotEmpty/@ValueNotEmpty
+* ws: support enum in path param
+
+### 4.0.3 (1/19/2016)
+* cache: update getAll to return Map<String, T>
+
+### 4.0.2 (1/18/2016)
+* web: removed URIBuilder, added Encodings.encodeURIComponent and decodeURIComponent
+* web: use URI query param encoding/decoding to set/get cookie (refered as URLEncoding in other place, e.g. jquery)
+
+### 4.0.1 (1/13/2016)
+* schedule: support weekly and monthly trigger
 
 ### 4.0.0 (1/8/2016 - 1/11/2016)
 * bytebuf: improve for skip/available as it will be wrapped by buffered stream or S3 client

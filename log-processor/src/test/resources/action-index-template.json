@@ -1,0 +1,65 @@
+{
+  "template": "action-*",
+  "order": 1,
+  "settings": {
+    "number_of_shards": 1
+  },
+  "mappings": {
+    "action": {
+      "_all": {
+        "enabled": false
+      },
+      "dynamic_templates": [
+        {
+          "context": {
+            "path_match": "context.*",
+            "match_mapping_type": "string",
+            "mapping": {
+              "type": "string",
+              "index": "not_analyzed"
+            }
+          }
+        }
+      ],
+      "properties": {
+        "date": {
+          "type": "date"
+        },
+        "id": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "app": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "server_ip": {
+          "type": "ip"
+        },
+        "result": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "ref_id": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "action": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "error_code": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "error_message": {
+          "type": "string",
+          "index": "no"
+        },
+        "elapsed": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

@@ -23,8 +23,9 @@ public class WebModule extends Module {
         http().intercept(bind(TestInterceptor.class));
 
         route().get("/hello", request -> Response.text("hello", HTTPStatus.CREATED, ContentType.TEXT_PLAIN));
-        route().get("/hello/", request -> Response.text("hello with ending slash", HTTPStatus.CREATED, ContentType.TEXT_PLAIN));
+        route().get("/hello/", request -> Response.text("hello with trailing slash", HTTPStatus.CREATED, ContentType.TEXT_PLAIN));
         route().get("/hello/:name", request -> Response.text("hello " + request.pathParam("name"), HTTPStatus.CREATED, ContentType.TEXT_PLAIN));
+        route().get("/hello-redirect", request -> Response.redirect("/hello"));
 
         site().staticContent("/static");
         site().staticContent("/favicon.ico");

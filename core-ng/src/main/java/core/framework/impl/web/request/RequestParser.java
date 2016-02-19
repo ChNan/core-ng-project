@@ -2,10 +2,10 @@ package core.framework.impl.web.request;
 
 import core.framework.api.http.ContentType;
 import core.framework.api.http.HTTPMethod;
-import core.framework.api.util.Charsets;
 import core.framework.api.util.Files;
 import core.framework.api.util.Strings;
 import core.framework.impl.log.ActionLog;
+import core.framework.impl.log.LogParam;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
@@ -49,10 +49,8 @@ public final class RequestParser {
 
         actionLog.context("path", request.path());
 
-        String requestURL = requestURL(request, exchange);
-        request.requestURL = requestURL;
-        logger.debug("[request] requestURL={}", requestURL);
-        logger.debug("[request] queryString={}", exchange.getQueryString());
+        request.requestURL = requestURL(request, exchange);
+        logger.debug("[request] requestURL={}", request.requestURL);
 
         for (HeaderValues header : headers) {
             logger.debug("[request:header] {}={}", header.getHeaderName(), header.toArray());
@@ -74,8 +72,8 @@ public final class RequestParser {
             if (request.contentType == null) return;    // pass if post empty body without content type
 
             if (ContentType.APPLICATION_JSON.mediaType().equals(request.contentType.mediaType())) {
-                request.body = body.body().text(request.contentType.charset().orElse(Charsets.UTF_8));
-                logger.debug("[request] body={}", request.body);
+                request.body = body.body();
+                logger.debug("[request] body={}", LogParam.of(request.body));
             } else {
                 logger.warn("unsupported body, contentType={}", request.contentType);
             }
@@ -124,13 +122,15 @@ public final class RequestParser {
     }
 
     private String requestURL(RequestImpl request, HttpServerExchange exchange) {
+        StringBuilder builder = new StringBuilder();
+
         if (exchange.isHostIncludedInRequestURI()) {    // GET can use absolute url as request uri, http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html
-            return exchange.getRequestURI();
+            builder.append(exchange.getRequestURI());
         } else {
             String scheme = request.scheme;
             int port = request.port;
 
-            StringBuilder builder = new StringBuilder(scheme)
+            builder.append(scheme)
                 .append("://")
                 .append(exchange.getHostName());
 
@@ -140,7 +140,11 @@ public final class RequestParser {
             }
 
             builder.append(exchange.getRequestURI());
-            return builder.toString();
         }
+
+        String queryString = exchange.getQueryString();
+        if (!Strings.isEmpty(queryString)) builder.append('?').append(queryString);
+
+        return builder.toString();
     }
 }

@@ -8,8 +8,6 @@ import core.framework.api.util.Strings;
 import core.framework.api.util.Types;
 import core.framework.impl.db.DatabaseImpl;
 import core.framework.impl.module.ModuleContext;
-import core.framework.impl.resource.RefreshPoolJob;
-import core.framework.impl.scheduler.FixedRateTrigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +30,14 @@ public final class DBConfig {
             database = context.beanFactory.bean(Database.class, name);
         } else {
             database = new DatabaseImpl();
+            database.pool.name("db" + (name == null ? "" : "-" + name));
+
             context.shutdownHook.add(database::close);
-            String poolName = "db" + (name == null ? "" : "-" + name);
-            database.pool.name(poolName);
-            context.scheduler().addTrigger(new FixedRateTrigger("refresh-" + poolName + "-pool", new RefreshPoolJob(database.pool), Duration.ofMinutes(15)));
+
+            if (!context.isTest()) {
+                context.backgroundTask().scheduleWithFixedDelay(database.pool::refresh, Duration.ofMinutes(30));
+            }
+
             context.beanFactory.bind(Database.class, name, database);
         }
     }
@@ -70,20 +72,20 @@ public final class DBConfig {
         database.pool.size(minSize, maxSize);
     }
 
-    public void defaultIsolationLevel(IsolationLevel defaultIsolationLevel) {
-        database.operation.transactionManager.defaultIsolationLevel = defaultIsolationLevel;
+    public void defaultIsolationLevel(IsolationLevel level) {
+        database.operation.transactionManager.defaultIsolationLevel = level;
     }
 
-    public void slowQueryThreshold(Duration slowQueryThreshold) {
-        database.slowQueryThreshold(slowQueryThreshold);
+    public void slowOperationThreshold(Duration threshold) {
+        database.slowOperationThreshold(threshold);
     }
 
-    public void tooManyRowsReturnedThreshold(int tooManyRowsReturnedThreshold) {
-        database.tooManyRowsReturnedThreshold = tooManyRowsReturnedThreshold;
+    public void tooManyRowsReturnedThreshold(int threshold) {
+        database.tooManyRowsReturnedThreshold = threshold;
     }
 
-    public void longTransactionThreshold(Duration longTransactionThreshold) {
-        database.operation.transactionManager.longTransactionThresholdInMs = longTransactionThreshold.toMillis();
+    public void longTransactionThreshold(Duration threshold) {
+        database.operation.transactionManager.longTransactionThresholdInMs = threshold.toMillis();
     }
 
     public void timeout(Duration timeout) {

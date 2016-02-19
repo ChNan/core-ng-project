@@ -5,14 +5,14 @@ import core.framework.api.async.Executor;
 import core.framework.api.module.MessageHandlerConfig;
 import core.framework.api.queue.Message;
 import core.framework.api.queue.MessageHandler;
-import core.framework.api.util.Charsets;
 import core.framework.api.util.Exceptions;
-import core.framework.api.util.JSON;
 import core.framework.api.util.Maps;
 import core.framework.api.util.Strings;
 import core.framework.api.util.Threads;
+import core.framework.impl.json.JSONReader;
 import core.framework.impl.log.ActionLog;
 import core.framework.impl.log.LogManager;
+import core.framework.impl.log.LogParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ public class RabbitMQListener implements MessageHandlerConfig {
     private final LogManager logManager;
     private final MessageValidator validator;
     private final Map<String, MessageHandler> handlers = Maps.newHashMap();
-    private final Map<String, Class> messageClasses = Maps.newHashMap();
+    private final Map<String, JSONReader> readers = Maps.newHashMap();
     private int maxConcurrentHandlers = 10;
     private Semaphore semaphore;
 
@@ -48,9 +48,9 @@ public class RabbitMQListener implements MessageHandlerConfig {
         this.logManager = logManager;
 
         listenerThread = new Thread(() -> {
-            logger.info("rabbitMQ message listener started, queue={}", queue);
+            logger.info("rabbitMQ listener started, queue={}", queue);
             while (!stop.get()) {
-                try (RabbitMQConsumer consumer = rabbitMQ.consumer(queue, maxConcurrentHandlers)) {
+                try (RabbitMQConsumer consumer = rabbitMQ.consumer(queue, maxConcurrentHandlers * 2)) { // prefetch one more for each handler to improve throughput
                     pullMessages(consumer);
                 } catch (Throwable e) {
                     if (!stop.get()) {  // if not initiated by shutdown, exception types can be ShutdownSignalException, InterruptedException
@@ -70,7 +70,7 @@ public class RabbitMQListener implements MessageHandlerConfig {
 
         validator.register(messageClass);
         String messageType = messageClass.getDeclaredAnnotation(Message.class).name();
-        messageClasses.put(messageType, messageClass);
+        readers.put(messageType, JSONReader.of(messageClass));
         handlers.put(messageType, handler);
         return this;
     }
@@ -104,7 +104,7 @@ public class RabbitMQListener implements MessageHandlerConfig {
     }
 
     public void stop() {
-        logger.info("stop rabbitMQ message listener, queue={}", queue);
+        logger.info("stop rabbitMQ listener, queue={}", queue);
         stop.set(true);
         listenerThread.interrupt();
     }
@@ -112,11 +112,11 @@ public class RabbitMQListener implements MessageHandlerConfig {
     private <T> void process(QueueingConsumer.Delivery delivery) throws Exception {
         ActionLog actionLog = logManager.currentActionLog();
 
-        String messageBody = new String(delivery.getBody(), Charsets.UTF_8);
+        byte[] body = delivery.getBody();
         String messageType = delivery.getProperties().getType();
         actionLog.context("messageType", messageType);
 
-        logger.debug("message={}", messageBody);
+        logger.debug("body={}", LogParam.of(body));
 
         if (Strings.isEmpty(messageType)) throw new Error("messageType must not be empty");
 
@@ -140,11 +140,11 @@ public class RabbitMQListener implements MessageHandlerConfig {
         }
 
         @SuppressWarnings("unchecked")
-        Class<T> messageClass = messageClasses.get(messageType);
-        if (messageClass == null) {
-            throw Exceptions.error("can not find message class, messageType={}", messageType);
+        JSONReader<T> reader = readers.get(messageType);
+        if (reader == null) {
+            throw Exceptions.error("unknown message type, messageType={}", messageType);
         }
-        T message = JSON.fromJSON(messageClass, messageBody);
+        T message = reader.fromJSON(body);
         validator.validate(message);
 
         @SuppressWarnings("unchecked")

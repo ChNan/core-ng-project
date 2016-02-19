@@ -1,42 +1,51 @@
 package core.framework.impl.scheduler;
 
 import core.framework.api.scheduler.Job;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
  * @author neo
  */
-public class DailyTrigger extends Trigger {
-    private final Logger logger = LoggerFactory.getLogger(DailyTrigger.class);
-
+public final class DailyTrigger implements Trigger {
+    private final String name;
+    private final Job job;
     private final LocalTime time;
 
     public DailyTrigger(String name, Job job, LocalTime time) {
-        super(name, job);
+        this.name = name;
+        this.job = job;
         this.time = time;
     }
 
-    Duration delayToNextScheduledTime(LocalTime time, LocalTime now) {
-        Duration delay = Duration.between(now, time);
-        long delayInSeconds = delay.getSeconds();
-        if (delayInSeconds < 0) return delay.plus(Duration.ofDays(1));
-        return delay;
+    @Override
+    public String name() {
+        return name;
     }
 
     @Override
-    void schedule(Scheduler scheduler) {
-        logger.info("scheduled daily job, name={}, atTime={}, job={}", name, time, job.getClass().getCanonicalName());
-        LocalTime now = LocalTime.now();
-        Duration delay = delayToNextScheduledTime(time, now);
-        scheduler.schedule(name, job, delay, Duration.ofDays(1));
+    public Job job() {
+        return job;
     }
 
     @Override
-    public String scheduleInfo() {
+    public void schedule(Scheduler scheduler) {
+        Duration delay = nextDelay(LocalDateTime.now());
+        scheduler.schedule(this, delay, Duration.ofDays(1));
+    }
+
+    @Override
+    public String frequency() {
         return "daily@" + time;
+    }
+
+    Duration nextDelay(LocalDateTime now) {
+        Duration delay = Duration.between(now.toLocalTime(), time);
+        if (delay.isNegative()) {
+            return delay.plusDays(1);
+        }
+        return delay;
     }
 }

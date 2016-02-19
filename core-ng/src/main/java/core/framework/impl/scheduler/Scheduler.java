@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,7 +30,10 @@ public final class Scheduler {
     }
 
     public void start() {
-        triggers.forEach((name, trigger) -> trigger.schedule(this));
+        triggers.forEach((name, trigger) -> {
+            logger.info("schedule job, job={}, frequency={}, jobClass={}", name, trigger.frequency(), trigger.job().getClass().getCanonicalName());
+            trigger.schedule(this);
+        });
         logger.info("scheduler started");
     }
 
@@ -39,34 +43,43 @@ public final class Scheduler {
     }
 
     public void addTrigger(Trigger trigger) {
-        Class<? extends Job> jobClass = trigger.job.getClass();
+        Class<? extends Job> jobClass = trigger.job().getClass();
         if (jobClass.isSynthetic())
             throw Exceptions.error("job class must not be anonymous class or lambda, please create static class, jobClass={}", jobClass.getCanonicalName());
 
-        Trigger previous = triggers.putIfAbsent(trigger.name, trigger);
+        String name = trigger.name();
+        Trigger previous = triggers.putIfAbsent(name, trigger);
         if (previous != null)
-            throw Exceptions.error("duplicated job found, name={}, previousJobClass={}", previous.name, previous.job.getClass().getCanonicalName());
+            throw Exceptions.error("duplicated job found, name={}, previousJobClass={}", name, previous.job().getClass().getCanonicalName());
+    }
+
+    void schedule(DynamicTrigger trigger, Duration delay) {
+        scheduler.schedule(() -> {
+            LocalDateTime now = LocalDateTime.now();
+            Duration nextDelay = trigger.nextDelay(now);
+            schedule(trigger, nextDelay);
+            submitJob("job/" + trigger.name(), trigger);
+        }, delay.toMillis(), TimeUnit.MILLISECONDS);
+    }
+
+    void schedule(Trigger trigger, Duration delay, Duration rate) {
+        scheduler.scheduleAtFixedRate(() -> submitJob("job/" + trigger.name(), trigger), delay.toMillis(), rate.toMillis(), TimeUnit.MILLISECONDS);
+    }
+
+    void submitJob(String action, Trigger trigger) {
+        executor.submit(action, () -> {
+            logger.info("execute scheduled job, job={}", trigger.name());
+            Job job = trigger.job();
+            ActionLogContext.put("job", trigger.name());
+            ActionLogContext.put("jobClass", job.getClass().getCanonicalName());
+            job.execute();
+            return null;
+        });
     }
 
     public void triggerNow(String name) {
         Trigger trigger = triggers.get(name);
         if (trigger == null) throw new NotFoundException("job not found, name=" + name);
-        Job job = trigger.job;
-        executeJob(name, job);
-    }
-
-    void schedule(String name, Job job, Duration initialDelay, Duration rate) {
-        scheduler.scheduleAtFixedRate(() -> executeJob(name, job), initialDelay.toMillis(), rate.toMillis(), TimeUnit.MILLISECONDS);
-    }
-
-    private void executeJob(String name, Job job) {
-        String action = "job/" + name;
-        executor.submit(action, () -> {
-            logger.info("execute scheduled job, name={}", name);
-            ActionLogContext.put("job", name);
-            ActionLogContext.put("jobClass", job.getClass().getCanonicalName());
-            job.execute();
-            return null;
-        });
+        submitJob(trigger.name(), trigger);
     }
 }
