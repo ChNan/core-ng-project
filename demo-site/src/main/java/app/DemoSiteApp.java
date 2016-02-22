@@ -11,6 +11,6 @@ public class DemoSiteApp extends App {
     protected void initialize() {
         load(new SystemModule("sys.properties"));
 
-        load(new WebModule());
+        load(new DemoSiteModule());
     }
 }
